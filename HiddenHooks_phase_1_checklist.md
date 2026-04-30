@@ -216,39 +216,39 @@ You'll write two near-identical ingestion scripts. The patterns are the same; th
  
 Pick a tight box for v1 — much smaller than your Phase 0 exploration area. Rouge Park area is ideal: enough water bodies to test, small enough to iterate fast.
  
-- [ ] Create `backend/config.py` with a `TEST_BBOX` constant covering Rouge National Urban Park (approx 43.78–43.85 N, -79.20 to -79.10 W — adjust to taste)
-- [ ] Comment why this bounding box was chosen
+- [x] Create `backend/config.py` with a `TEST_BBOX` constant covering Rouge National Urban Park (approx 43.78–43.85 N, -79.20 to -79.10 W — adjust to taste)
+- [x] Comment why this bounding box was chosen
 ### Copy OHN data into the project
  
-- [ ] Copy your Phase 0 OHN Waterbody shapefiles to `data/ohn_waterbody/` in the project
-- [ ] Copy your OHN Watercourse shapefiles to `data/ohn_watercourse/`
-- [ ] Confirm all supporting files are present in each folder (`.shp`, `.shx`, `.dbf`, `.prj`)
+- [x] Copy your Phase 0 OHN Waterbody shapefiles to `data/ohn_waterbody/` in the project
+- [x] Copy your OHN Watercourse shapefiles to `data/ohn_watercourse/`
+- [x] Confirm all supporting files are present in each folder (`.shp`, `.shx`, `.dbf`, `.prj`)
 ### Write the Waterbody ingestion script
  
 **Plan Mode prompt**: "Write a Python script `backend/ingest/ohn_waterbody.py` that reads the OHN Waterbody shapefile from `data/ohn_waterbody/`, filters to features intersecting our TEST_BBOX (defined in config.py), reprojects to EPSG:3161, and inserts them into the candidates table with `candidate_type='polygon'` and `source_dataset='waterbody'`. Compute and store surface area (in square meters) for each polygon; leave length null. Use GeoPandas for reading and reprojection, SQLAlchemy for inserts. Make it idempotent — running twice doesn't duplicate rows; use upsert on the OHN ID. Show me the plan before generating code."
  
 Things to verify in the plan:
-- [ ] CRS handling explicit (detected from source `.prj`, not assumed)
-- [ ] Bounding box filter happens *before* reprojection (cheaper)
-- [ ] `candidate_type='polygon'` and `source_dataset='waterbody'` set correctly
-- [ ] Surface area computed in projected CRS (EPSG:3161) so units are meaningful
-- [ ] Idempotency strategy is real (upsert on OHN ID + source_dataset, since IDs may collide across datasets)
+- [x] CRS handling explicit (detected from source `.prj`, not assumed)
+- [x] Bounding box filter happens *before* reprojection (cheaper)
+- [x] `candidate_type='polygon'` and `source_dataset='waterbody'` set correctly
+- [x] Surface area computed in projected CRS (EPSG:3161) so units are meaningful
+- [x] Idempotency strategy is real (upsert on OHN ID + source_dataset, since IDs may collide across datasets)
 After implementation:
-- [ ] Run the script
-- [ ] `SELECT COUNT(*) FROM candidates WHERE source_dataset='waterbody';` — should match your expected polygon count
+- [x] Run the script
+- [x] `SELECT COUNT(*) FROM candidates WHERE source_dataset='waterbody';` — should match your expected polygon count
 ### Write the Watercourse ingestion script
  
 **Plan Mode prompt**: "Write a Python script `backend/ingest/ohn_watercourse.py` that mirrors `ohn_waterbody.py` but reads the OHN Watercourse shapefile from `data/ohn_watercourse/`. Insert features with `candidate_type='reach_full'` and `source_dataset='watercourse'`. Compute and store length (in meters) for each linestring; leave area null. Same idempotency, same CRS handling, same bbox filter. Show me the plan before generating code, and call out anything that's different from the waterbody script beyond the file path and the type/length-vs-area fields."
  
 Things to verify in the plan:
-- [ ] `candidate_type='reach_full'` and `source_dataset='watercourse'` set correctly
-- [ ] Length computed in projected CRS so units are meaningful
-- [ ] `parent_candidate_id` is null in Phase 1 (will be populated in Phase 2 when reaches are segmented)
-- [ ] Handles MultiLineString geometry properly (some watercourses may be split into multipart features)
+- [x] `candidate_type='reach_full'` and `source_dataset='watercourse'` set correctly
+- [x] Length computed in projected CRS so units are meaningful
+- [x] `parent_candidate_id` is null in Phase 1 (will be populated in Phase 2 when reaches are segmented)
+- [x] Handles MultiLineString geometry properly (some watercourses may be split into multipart features)
 After implementation:
-- [ ] Run the script
-- [ ] `SELECT candidate_type, COUNT(*) FROM candidates GROUP BY candidate_type;` — should now show both `polygon` and `reach_full` rows
-- [ ] Watercourse counts will likely outnumber waterbody counts substantially (streams are everywhere)
+- [x] Run the script
+- [x] `SELECT candidate_type, COUNT(*) FROM candidates GROUP BY candidate_type;` — should now show both `polygon` and `reach_full` rows
+- [x] Watercourse counts will likely outnumber waterbody counts substantially (streams are everywhere)
 ### Visual sanity check (do not skip)
  
 - [ ] Open QGIS

@@ -4,3 +4,6 @@ phase-0-data/ara/Aquatic_Resource_Area_Survey_Point/Aquatic_Resource_Area_Survey
 
 # Claude settings
 .claude/settings.local.json
+
+data/ohn_waterbody
+data/ohn_watercourse

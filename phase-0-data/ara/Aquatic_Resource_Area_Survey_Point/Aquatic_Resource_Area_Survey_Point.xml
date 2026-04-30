@@ -1,0 +1,494 @@
+<?xml version="1.0" encoding="UTF-8"?><MD_Metadata xmlns:gts="http://www.isotc211.org/2005/gts" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:xalan="http://xml.apache.org/xalan" xmlns:srv="http://www.isotc211.org/2005/srv" xmlns:gmx="http://www.isotc211.org/2005/gmx" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns="http://www.isotc211.org/2005/gmd">
+    <fileIdentifier>
+        <gco:CharacterString>bb56b3df8a544ecdb37e9cc2a7ccfd18</gco:CharacterString>
+    </fileIdentifier>
+    <language>
+        <LanguageCode codeList="http://www.loc.gov/standards/iso639-2/php/code_list.php" codeListValue="eng" codeSpace="ISO639-2">eng</LanguageCode>
+    </language>
+    <characterSet>
+        <MD_CharacterSetCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="utf8" codeSpace="ISOTC211/19115">utf8</MD_CharacterSetCode>
+    </characterSet>
+    <hierarchyLevel>
+        <MD_ScopeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="dataset" codeSpace="ISOTC211/19115">dataset</MD_ScopeCode>
+    </hierarchyLevel>
+    <contact>
+        <CI_ResponsibleParty>
+            <individualName>
+                <gco:CharacterString>Mae Rannells-Warren</gco:CharacterString>
+            </individualName>
+            <organisationName>
+                <gco:CharacterString>Fisheries Policy Section,  Fish and Wildlife Policy Branch, Ministry of Natural Resources</gco:CharacterString>
+            </organisationName>
+            <positionName>
+                <gco:CharacterString>Fisheries Information Biologist</gco:CharacterString>
+            </positionName>
+            <contactInfo>
+                <CI_Contact>
+                    <phone>
+                        <CI_Telephone>
+                            <voice>
+                                <gco:CharacterString>705-772-9064</gco:CharacterString>
+                            </voice>
+                        </CI_Telephone>
+                    </phone>
+                    <address>
+                        <CI_Address>
+                            <electronicMailAddress>
+                                <gco:CharacterString>mae.rannells-warren@ontario.ca</gco:CharacterString>
+                            </electronicMailAddress>
+                        </CI_Address>
+                    </address>
+                </CI_Contact>
+            </contactInfo>
+            <role>
+                <CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="pointOfContact" codeSpace="ISOTC211/19115">pointOfContact</CI_RoleCode>
+            </role>
+        </CI_ResponsibleParty>
+    </contact>
+    <dateStamp>
+        <gco:Date>2023-06-20</gco:Date>
+    </dateStamp>
+    <metadataStandardName>
+        <gco:CharacterString>NAP - Metadata</gco:CharacterString>
+    </metadataStandardName>
+    <metadataStandardVersion>
+        <gco:CharacterString>1.2</gco:CharacterString>
+    </metadataStandardVersion>
+    <referenceSystemInfo>
+        <MD_ReferenceSystem>
+            <referenceSystemIdentifier>
+                <RS_Identifier>
+                    <code>
+                        <gco:CharacterString>Grid CS = Geographic (Lat, Long); Map Proj = Not Applicable; Horiz. Datum = NAD83; Vert. Datum = Not Applicable</gco:CharacterString>
+                    </code>
+                </RS_Identifier>
+            </referenceSystemIdentifier>
+        </MD_ReferenceSystem>
+    </referenceSystemInfo>
+    <identificationInfo>
+        <MD_DataIdentification>
+            <citation>
+                <CI_Citation>
+                    <title>
+                        <gco:CharacterString>Aquatic Resource Area Survey Point</gco:CharacterString>
+                    </title>
+                    <alternateTitle>
+                        <gco:CharacterString>ARA_SURVEY_POINT</gco:CharacterString>
+                    </alternateTitle>
+                    <date>
+                        <CI_Date>
+                            <date>
+                                <gco:Date>2009-06-08</gco:Date>
+                            </date>
+                            <dateType>
+                                <CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation" codeSpace="ISOTC211/19115">creation</CI_DateTypeCode>
+                            </dateType>
+                        </CI_Date>
+                    </date>
+                    <date>
+                        <CI_Date>
+                            <date>
+                                <gco:DateTime>2026-03-23T15:56:09</gco:DateTime>
+                            </date>
+                            <dateType>
+                                <CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision" codeSpace="ISOTC211/19115">revision</CI_DateTypeCode>
+                            </dateType>
+                        </CI_Date>
+                    </date>
+                    <identifier>
+                        <MD_Identifier>
+                            <authority>
+                                <CI_Citation>
+                                    <title>
+                                        <gco:CharacterString>LIO Metadata Management Tool UUID</gco:CharacterString>
+                                    </title>
+                                    <date>
+                                        <CI_Date>
+                                            <date>
+                                                <gco:DateTime>2019-04-11T14:56:20.432521</gco:DateTime>
+                                            </date>
+                                            <dateType>
+                                                <CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication" codeSpace="ISOTC211/19115">publication</CI_DateTypeCode>
+                                            </dateType>
+                                        </CI_Date>
+                                    </date>
+                                    <citedResponsibleParty gco:nilReason="missing"/>
+                                </CI_Citation>
+                            </authority>
+                            <code>
+                                <gco:CharacterString>81c00843-921b-4cc1-a4f0-46abd9bedf57</gco:CharacterString>
+                            </code>
+                        </MD_Identifier>
+                    </identifier>
+                    <identifier>
+                        <MD_Identifier>
+                            <authority>
+                                <CI_Citation>
+                                    <title>
+                                        <gco:CharacterString>LIO Concrete Class Short Name</gco:CharacterString>
+                                    </title>
+                                    <date>
+                                        <CI_Date>
+                                            <date>
+                                                <gco:DateTime>2019-04-11T14:56:20.441515</gco:DateTime>
+                                            </date>
+                                            <dateType>
+                                                <CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication" codeSpace="ISOTC211/19115">publication</CI_DateTypeCode>
+                                            </dateType>
+                                        </CI_Date>
+                                    </date>
+                                    <citedResponsibleParty gco:nilReason="missing"/>
+                                </CI_Citation>
+                            </authority>
+                            <code>
+                                <gco:CharacterString>ARASURPT</gco:CharacterString>
+                            </code>
+                        </MD_Identifier>
+                    </identifier>
+                    <identifier>
+                        <MD_Identifier>
+                            <authority>
+                                <CI_Citation>
+                                    <title>
+                                        <gco:CharacterString>Ontario GeoHub French Record ID</gco:CharacterString>
+                                    </title>
+                                    <date>
+                                        <CI_Date>
+                                            <date>
+                                                <gco:DateTime>2020-12-07T16:31:08.167532</gco:DateTime>
+                                            </date>
+                                            <dateType>
+                                                <CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication" codeSpace="ISOTC211/19115">publication</CI_DateTypeCode>
+                                            </dateType>
+                                        </CI_Date>
+                                    </date>
+                                    <citedResponsibleParty gco:nilReason="missing"/>
+                                </CI_Citation>
+                            </authority>
+                            <code>
+                                <gco:CharacterString>8d0a3528d0174205932855ff5d9dcb50</gco:CharacterString>
+                            </code>
+                        </MD_Identifier>
+                    </identifier>
+                    <citedResponsibleParty>
+                        <CI_ResponsibleParty>
+                            <organisationName>
+                                <gco:CharacterString>Ontario Ministry of Natural Resources and Forestry</gco:CharacterString>
+                            </organisationName>
+                            <contactInfo gco:nilReason="missing"/>
+                            <role>
+                                <CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="publisher" codeSpace="ISOTC211/19115">publisher</CI_RoleCode>
+                            </role>
+                        </CI_ResponsibleParty>
+                    </citedResponsibleParty>
+                </CI_Citation>
+            </citation>
+            <abstract>
+                <gco:CharacterString>This spatial dataset represents the locations of aquatic resource area (ARA) survey points. ARA survey points may represent a portion of a water body or an entire water body (such as a lake, river or stream). Attributes for each location may include:physical characteristics such as water temperature and depthfish speciesThe ARA data classes are the authoritative source for generic spatial data related to fish species in Ontario. The data can be used for:forest and fisheries management planningmunicipal planningnatural heritage and land use planningissuing work permits under the Public Lands Act, 1990issuing licenses under the Fish and Wildlife Conservation Act, 1997fulfilling public information requestsThere are additional sensitive data related to provincially tracked species and species at risk that are not available as part of this open data package. Distribution of sensitive species data is approved on a need-to-know basis. Requests should be sent to geospatial@ontario.ca.Additional DocumentationARA Survey Point - User Guide (PDF)ARA Survey Point - Data Description (PDF)Aquatic Resource Area Survey Point - Documentation (Word)StatusOn going: data is being continually updatedMaintenance and Update FrequencyAs needed: data is updated as deemed necessaryContactMae Rannells-Warren, Fisheries Section, Fish and Wildlife Policy Branch, mae.rannells-warren@ontario.ca</gco:CharacterString>
+            </abstract>
+            <purpose>
+                <gco:CharacterString>The Aquatic Resource Area (ARA) data classes are the authoritative source of generic fisheries spatial data in Ontario.</gco:CharacterString>
+            </purpose>
+            <credit>
+                <gco:CharacterString>Open Government Licence – Ontario</gco:CharacterString>
+            </credit>
+            <status>
+                <MD_ProgressCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ProgressCode" codeListValue="onGoing" codeSpace="ISOTC211/19115">onGoing</MD_ProgressCode>
+            </status>
+            <pointOfContact>
+                <CI_ResponsibleParty>
+                    <organisationName>
+                        <gco:CharacterString>Ontario Ministry of Natural Resources and Forestry</gco:CharacterString>
+                    </organisationName>
+                    <positionName>
+                        <gco:CharacterString>Director, Species Conseravtion Policy Branch</gco:CharacterString>
+                    </positionName>
+                    <contactInfo gco:nilReason="missing"/>
+                    <role>
+                        <CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="owner" codeSpace="ISOTC211/19115">owner</CI_RoleCode>
+                    </role>
+                </CI_ResponsibleParty>
+            </pointOfContact>
+            <resourceMaintenance>
+                <MD_MaintenanceInformation>
+                    <maintenanceAndUpdateFrequency>
+                        <MD_MaintenanceFrequencyCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_MaintenanceFrequencyCode" codeListValue="asNeeded" codeSpace="ISOTC211/19115">asNeeded</MD_MaintenanceFrequencyCode>
+                    </maintenanceAndUpdateFrequency>
+                </MD_MaintenanceInformation>
+            </resourceMaintenance>
+            <graphicOverview>
+                <MD_BrowseGraphic>
+                    <fileName gco:nilReason="withheld"/>
+                    <fileDescription>
+                        <gco:CharacterString>thumbnail</gco:CharacterString>
+                    </fileDescription>
+                    <fileType>
+                        <gco:CharacterString>png</gco:CharacterString>
+                    </fileType>
+                </MD_BrowseGraphic>
+            </graphicOverview>
+            <graphicOverview>
+                <MD_BrowseGraphic>
+                    <fileName gco:nilReason="withheld"/>
+                    <fileDescription>
+                        <gco:CharacterString>thumbnail</gco:CharacterString>
+                    </fileDescription>
+                    <fileType>
+                        <gco:CharacterString>png</gco:CharacterString>
+                    </fileType>
+                </MD_BrowseGraphic>
+            </graphicOverview>
+            <graphicOverview>
+                <MD_BrowseGraphic>
+                    <fileName gco:nilReason="withheld"/>
+                    <fileDescription>
+                        <gco:CharacterString>thumbnail</gco:CharacterString>
+                    </fileDescription>
+                    <fileType>
+                        <gco:CharacterString>png</gco:CharacterString>
+                    </fileType>
+                </MD_BrowseGraphic>
+            </graphicOverview>
+            <graphicOverview>
+                <MD_BrowseGraphic>
+                    <fileName gco:nilReason="withheld"/>
+                    <fileDescription>
+                        <gco:CharacterString>large_thumbnail</gco:CharacterString>
+                    </fileDescription>
+                    <fileType>
+                        <gco:CharacterString>png</gco:CharacterString>
+                    </fileType>
+                </MD_BrowseGraphic>
+            </graphicOverview>
+            <graphicOverview>
+                <MD_BrowseGraphic>
+                    <fileName gco:nilReason="withheld"/>
+                    <fileDescription>
+                        <gco:CharacterString>large_thumbnail</gco:CharacterString>
+                    </fileDescription>
+                    <fileType>
+                        <gco:CharacterString>png</gco:CharacterString>
+                    </fileType>
+                </MD_BrowseGraphic>
+            </graphicOverview>
+            <graphicOverview>
+                <MD_BrowseGraphic>
+                    <fileName gco:nilReason="withheld"/>
+                    <fileDescription>
+                        <gco:CharacterString>large_thumbnail</gco:CharacterString>
+                    </fileDescription>
+                    <fileType>
+                        <gco:CharacterString>png</gco:CharacterString>
+                    </fileType>
+                </MD_BrowseGraphic>
+            </graphicOverview>
+            <descriptiveKeywords>
+                <MD_Keywords>
+                    <keyword>
+                        <gco:CharacterString>STREAMS</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>TEMPERATURE</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>FISHERIES MANAGEMENT</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>FISHES</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>AQUATIC RESOURCE AREA</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>AQUATIC ECOLOGY</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>WATER</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>LAKES</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>FISH</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>FISHERIES</gco:CharacterString>
+                    </keyword>
+                    <type>
+                        <MD_KeywordTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="theme" codeSpace="ISOTC211/19115">theme</MD_KeywordTypeCode>
+                    </type>
+                    <thesaurusName>
+                        <CI_Citation>
+                            <title>
+                                <gco:CharacterString>external</gco:CharacterString>
+                            </title>
+                            <date gco:nilReason="missing"/>
+                            <citedResponsibleParty gco:nilReason="missing"/>
+                        </CI_Citation>
+                    </thesaurusName>
+                </MD_Keywords>
+            </descriptiveKeywords>
+            <resourceConstraints>
+                <MD_LegalConstraints>
+                    <useLimitation>
+                        <gco:CharacterString>&lt;a href="https://www.ontario.ca/page/open-government-licence-ontario"&gt;Open Government Licence – Ontario&lt;/a&gt;</gco:CharacterString>
+                    </useLimitation>
+                    <otherConstraints>
+                        <gco:CharacterString>Some features may be removed due to sensitivity.</gco:CharacterString>
+                    </otherConstraints>
+                </MD_LegalConstraints>
+            </resourceConstraints>
+            <resourceConstraints>
+                <MD_LegalConstraints>
+                    <accessConstraints>
+                        <MD_RestrictionCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="otherRestrictions" codeSpace="ISOTC211/19115">otherRestrictions</MD_RestrictionCode>
+                    </accessConstraints>
+                    <otherConstraints>
+                        <gco:CharacterString>Other Constraints</gco:CharacterString>
+                    </otherConstraints>
+                </MD_LegalConstraints>
+            </resourceConstraints>
+            <resourceConstraints>
+                <MD_LegalConstraints>
+                    <useConstraints>
+                        <MD_RestrictionCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="otherRestrictions" codeSpace="ISOTC211/19115">otherRestrictions</MD_RestrictionCode>
+                    </useConstraints>
+                    <otherConstraints>
+                        <gco:CharacterString>Other Constraints</gco:CharacterString>
+                    </otherConstraints>
+                </MD_LegalConstraints>
+            </resourceConstraints>
+            <resourceConstraints>
+                <MD_LegalConstraints>
+                    <accessConstraints>
+                        <MD_RestrictionCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="otherRestrictions" codeSpace="ISOTC211/19115">otherRestrictions</MD_RestrictionCode>
+                    </accessConstraints>
+                    <otherConstraints>
+                        <gco:CharacterString>Other Constraints</gco:CharacterString>
+                    </otherConstraints>
+                </MD_LegalConstraints>
+            </resourceConstraints>
+            <resourceConstraints>
+                <MD_LegalConstraints>
+                    <useConstraints>
+                        <MD_RestrictionCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="otherRestrictions" codeSpace="ISOTC211/19115">otherRestrictions</MD_RestrictionCode>
+                    </useConstraints>
+                    <otherConstraints>
+                        <gco:CharacterString>Other Constraints</gco:CharacterString>
+                    </otherConstraints>
+                </MD_LegalConstraints>
+            </resourceConstraints>
+            <language>
+                <LanguageCode codeList="http://www.loc.gov/standards/iso639-2/php/code_list.php" codeListValue="eng" codeSpace="ISO639-2">eng</LanguageCode>
+            </language>
+            <characterSet>
+                <MD_CharacterSetCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="utf8" codeSpace="ISOTC211/19115">utf8</MD_CharacterSetCode>
+            </characterSet>
+            <topicCategory>
+                <MD_TopicCategoryCode>inlandWaters</MD_TopicCategoryCode>
+            </topicCategory>
+            <extent>
+                <EX_Extent>
+                    <geographicElement>
+                        <EX_GeographicBoundingBox>
+                            <westBoundLongitude>
+                                <gco:Decimal>-93.753</gco:Decimal>
+                            </westBoundLongitude>
+                            <eastBoundLongitude>
+                                <gco:Decimal>-75.737</gco:Decimal>
+                            </eastBoundLongitude>
+                            <southBoundLatitude>
+                                <gco:Decimal>41.918</gco:Decimal>
+                            </southBoundLatitude>
+                            <northBoundLatitude>
+                                <gco:Decimal>59.934</gco:Decimal>
+                            </northBoundLatitude>
+                        </EX_GeographicBoundingBox>
+                    </geographicElement>
+                </EX_Extent>
+            </extent>
+        </MD_DataIdentification>
+    </identificationInfo>
+    <distributionInfo>
+        <MD_Distribution>
+            <distributionFormat gco:nilReason="missing"/>
+            <transferOptions>
+                <MD_DigitalTransferOptions>
+                    <onLine>
+                        <CI_OnlineResource>
+                            <linkage>
+                                <URL>https://ws.gisetl.lrc.gov.on.ca/fmedatadownload/Packages/fgdb/ARASURPT.zip</URL>
+                            </linkage>
+                            <protocol gco:nilReason="missing"/>
+                            <name>
+                                <gco:CharacterString>Complete File Geodatabase</gco:CharacterString>
+                            </name>
+                        </CI_OnlineResource>
+                    </onLine>
+                    <onLine>
+                        <CI_OnlineResource>
+                            <linkage>
+                                <URL>https://ws.gisetl.lrc.gov.on.ca/fmedatadownload/Packages/ARASURPT.zip</URL>
+                            </linkage>
+                            <protocol gco:nilReason="missing"/>
+                            <name>
+                                <gco:CharacterString>Complete Shapefile</gco:CharacterString>
+                            </name>
+                        </CI_OnlineResource>
+                    </onLine>
+                    <onLine>
+                        <CI_OnlineResource>
+                            <linkage>
+                                <URL>https://www.publicdocs.mnr.gov.on.ca/mirb/lio-open-qlr-eng/aquatic-resource-area-survey-point.qlr</URL>
+                            </linkage>
+                            <protocol gco:nilReason="missing"/>
+                            <name>
+                                <gco:CharacterString>QGIS Layer Definition File (.qlr)</gco:CharacterString>
+                            </name>
+                        </CI_OnlineResource>
+                    </onLine>
+                </MD_DigitalTransferOptions>
+            </transferOptions>
+        </MD_Distribution>
+    </distributionInfo>
+    <dataQualityInfo>
+        <DQ_DataQuality>
+            <scope>
+                <DQ_Scope>
+                    <level>
+                        <MD_ScopeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="dataset" codeSpace="ISOTC211/19115">dataset</MD_ScopeCode>
+                    </level>
+                </DQ_Scope>
+            </scope>
+            <report>
+                <DQ_AbsoluteExternalPositionalAccuracy>
+                    <nameOfMeasure>
+                        <gco:CharacterString>Vertical</gco:CharacterString>
+                    </nameOfMeasure>
+                    <measureDescription>
+                        <gco:CharacterString>Not Applicable</gco:CharacterString>
+                    </measureDescription>
+                    <result gco:nilReason="missing"/>
+                </DQ_AbsoluteExternalPositionalAccuracy>
+            </report>
+            <report>
+                <DQ_AbsoluteExternalPositionalAccuracy>
+                    <nameOfMeasure>
+                        <gco:CharacterString>Horizontal</gco:CharacterString>
+                    </nameOfMeasure>
+                    <measureDescription>
+                        <gco:CharacterString>Approximate: +/- 500 m</gco:CharacterString>
+                    </measureDescription>
+                    <result gco:nilReason="missing"/>
+                </DQ_AbsoluteExternalPositionalAccuracy>
+            </report>
+        </DQ_DataQuality>
+    </dataQualityInfo>
+    <metadataMaintenance>
+        <MD_MaintenanceInformation>
+            <maintenanceAndUpdateFrequency>
+                <MD_MaintenanceFrequencyCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_MaintenanceFrequencyCode" codeListValue="annually" codeSpace="ISOTC211/19115">annually</MD_MaintenanceFrequencyCode>
+            </maintenanceAndUpdateFrequency>
+        </MD_MaintenanceInformation>
+    </metadataMaintenance>
+</MD_Metadata>

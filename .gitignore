@@ -1,0 +1,6 @@
+# Large GIS datasets - too big for GitHub (>100MB)
+phase-0-data/ohn/
+phase-0-data/ara/Aquatic_Resource_Area_Survey_Point/Aquatic_Resource_Area_Survey_Point.dbf
+
+# Claude settings
+.claude/settings.local.json

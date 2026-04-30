@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?><MD_Metadata xmlns:gts="http://www.isotc211.org/2005/gts" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:xalan="http://xml.apache.org/xalan" xmlns:srv="http://www.isotc211.org/2005/srv" xmlns:gmx="http://www.isotc211.org/2005/gmx" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns="http://www.isotc211.org/2005/gmd">
+    <fileIdentifier>
+        <gco:CharacterString>7d6a0ee4c3ac4935922918e11cb9f203</gco:CharacterString>
+    </fileIdentifier>
+    <language gco:nilReason="missing"/>
+    <characterSet>
+        <MD_CharacterSetCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="utf8" codeSpace="ISOTC211/19115">utf8</MD_CharacterSetCode>
+    </characterSet>
+    <hierarchyLevel>
+        <MD_ScopeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="dataset" codeSpace="ISOTC211/19115">dataset</MD_ScopeCode>
+    </hierarchyLevel>
+    <contact gco:nilReason="missing"/>
+    <dateStamp gco:nilReason="missing"/>
+    <metadataStandardName>
+        <gco:CharacterString>NAP - Metadata</gco:CharacterString>
+    </metadataStandardName>
+    <metadataStandardVersion>
+        <gco:CharacterString>1.2</gco:CharacterString>
+    </metadataStandardVersion>
+    <identificationInfo>
+        <MD_DataIdentification>
+            <citation>
+                <CI_Citation>
+                    <title>
+                        <gco:CharacterString>Fish Stocking Data For Recreational Purposes</gco:CharacterString>
+                    </title>
+                    <date gco:nilReason="missing"/>
+                    <citedResponsibleParty gco:nilReason="missing"/>
+                </CI_Citation>
+            </citation>
+            <abstract>
+                <gco:CharacterString>Fish stocking data for the past 10 years for species where the purpose of the stocking event was to promote recreational fishing. This is a subset of data from the provincial fish stocking information system. This data can also be obtained through the Fish ON-Line application. For information on where stocking occurs for research or rehabilitation purposes, contact a locale Ministry of Natural Resources and Forestry district office.StatusOn going: data is being continually updatedMaintenance and Update FrequencyAs needed: data is updated as deemed necessaryContactAdam Cottrill, Information Management Specialist - Great Lakes, Fish and Wildlife Services Branch, adam.cottrill@ontario.ca</gco:CharacterString>
+            </abstract>
+            <purpose>
+                <gco:CharacterString>This data is a subset of fish stocking data by the Ministry of Natural Resources and Forestry.</gco:CharacterString>
+            </purpose>
+            <credit>
+                <gco:CharacterString>https://www.ontario.ca/page/open-government-licence-ontario</gco:CharacterString>
+            </credit>
+            <status>
+                <MD_ProgressCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ProgressCode" codeListValue="onGoing" codeSpace="ISOTC211/19115">onGoing</MD_ProgressCode>
+            </status>
+            <descriptiveKeywords>
+                <MD_Keywords>
+                    <keyword>
+                        <gco:CharacterString>fish stocking</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>fish culture</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>ontario</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>fisheries management</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>fish and wildlife services branch</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>fwsb</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>open data</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>Ministry of Natural Resources and Forestry</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>MNRF</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>Plants and Animals</gco:CharacterString>
+                    </keyword>
+                </MD_Keywords>
+            </descriptiveKeywords>
+            <resourceConstraints>
+                <MD_Constraints>
+                    <useLimitation>
+                        <gco:CharacterString>Open Government Licence – OntarioYou are encouraged to use the Information that is available under this licence with only a few conditions.Using Information under this licence1. Use of any Information indicates your acceptance of the terms below.2. The Information Provider grants you a worldwide, royalty-free, perpetual, non-exclusive licence to use the Information, including for commercial purposes, subject to the terms below.You are free to:3. Copy, modify, publish, translate, adapt, distribute or otherwise use the Information in any medium, mode or format for any lawful purpose. You must, where you do any of the above:4. Acknowledge the source of the Information by including any attribution statement specified by the Information Provider(s) and, where possible, provide a link to this licence. If the Information Provider does not provide a specific attribution statement, or if you are using Information from several Information Providers and multiple attributions are not practical for your product or application, you must use the following attribution statement: Contains information licensed under the Open Government Licence – Ontario.5. The terms of this licence are important, and if you fail to comply with any of them, the rights granted to you under this licence, or any similar licence granted by the Information Provider, will end automatically.Exemptions6. This licence does not grant you any right to use: a) Personal Information; b) Information or Records not accessible under the Freedom of Information and Protection of Privacy Act (Ontario); c) third party rights the Information Provider is not authorized to license; d) the names, crests, logos, or other official symbols of the Information Provider; and e) Information subject to other intellectual property rights, including patents, trade-marks and official marks.Non-endorsement7. This licence does not grant you any right to use the Information in a way that suggests any official status or that the Information Provider endorses you or your use of the Information.No warranty8. The Information is licensed “as is”, and the Information Provider excludes all representations, warranties, obligations, and liabilities, whether express or implied, to the maximum extent permitted by law.9. The Information Provider is not liable for any errors or omissions in the Information, and will not under any circumstances be liable for any direct, indirect, special, incidental, consequential, or other loss, injury or damage caused by its use or otherwise arising in connection with this licence or the Information, even if specifically advised of the possibility of such loss, injury or damage.Governing Law10. This licence is governed by the laws of the Province of Ontario and the applicable laws of Canada.11. Legal proceedings related to this licence may only be brought in the courts of Ontario.Definitions12. In this licence, the terms below have the following meanings: &amp;quot;Information&amp;quot; means information resources or Records protected by copyright or other information or Records that are offered for use under the terms of this licence. &amp;quot;Information Provider&amp;quot; means Her Majesty the Queen in right of Ontario. “Personal Information” has the meaning set out in section 2(1) of the Freedom of Information and Protection of Privacy Act (Ontario). “Records” has the meaning of “record” as set out in the Freedom of Information and Protection of Privacy Act (Ontario). &amp;quot;You&amp;quot; means the natural or legal person, or body of persons corporate or incorporate, acquiring rights under this licence.Versioning13. This is version 1.0 of the Open Government Licence – Ontario. The Information Provider may make changes to the terms of this licence from time to time and issue a new version of the licence. Your use of the Information will be governed by the terms of the licence in force as of the date you accessed the information.</gco:CharacterString>
+                    </useLimitation>
+                </MD_Constraints>
+            </resourceConstraints>
+            <language>
+                <LanguageCode codeList="http://www.loc.gov/standards/iso639-2/php/code_list.php" codeListValue="eng" codeSpace="ISO639-2">eng</LanguageCode>
+            </language>
+            <characterSet>
+                <MD_CharacterSetCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="utf8" codeSpace="ISOTC211/19115">utf8</MD_CharacterSetCode>
+            </characterSet>
+        </MD_DataIdentification>
+    </identificationInfo>
+    <distributionInfo>
+        <MD_Distribution>
+            <distributionFormat gco:nilReason="missing"/>
+            <transferOptions>
+                <MD_DigitalTransferOptions>
+                    <onLine>
+                        <CI_OnlineResource>
+                            <linkage>
+                                <URL>https://mnrf.maps.arcgis.com/sharing/rest/content/items/7d6a0ee4c3ac4935922918e11cb9f203/data</URL>
+                            </linkage>
+                            <protocol gco:nilReason="missing"/>
+                        </CI_OnlineResource>
+                    </onLine>
+                </MD_DigitalTransferOptions>
+            </transferOptions>
+        </MD_Distribution>
+    </distributionInfo>
+</MD_Metadata>

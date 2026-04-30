@@ -85,10 +85,10 @@ Single scoring feature: distance to nearest road.
 
 In `.claude/commands/`, create these as markdown files. They're saved prompts you can fire repeatedly:
 
-- [ ] `/sanity-check` — Connect to the database, report row counts, geometry validity, CRS for each layer, and any recent schema changes.
-- [ ] `/explain-query` — Given a SQL or PostGIS query, walk through it step by step explaining what each clause does and why.
-- [ ] `/scope-check` — Review what we're currently building against Phase 1's stated deliverable. Flag any scope creep.
-- [ ] `/why-this-choice` — Given a recent code or architectural decision, explain why it was chosen over the alternatives.
+- [x] `/sanity-check` — Connect to the database, report row counts, geometry validity, CRS for each layer, and any recent schema changes.
+- [x] `/explain-query` — Given a SQL or PostGIS query, walk through it step by step explaining what each clause does and why.
+- [x] `/scope-check` — Review what we're currently building against Phase 1's stated deliverable. Flag any scope creep.
+- [x] `/why-this-choice` — Given a recent code or architectural decision, explain why it was chosen over the alternatives.
 
 You won't use all of these constantly, but having them ready saves typing the same prompt repeatedly.
 
@@ -112,27 +112,27 @@ You're staying on Windows native (your call, and reasonable). Use conda for the 
 
 ### Install Miniconda
 
-- [ ] Download Miniconda for Windows from https://docs.conda.io/projects/miniconda/
-- [ ] Install with default options
-- [ ] Open a fresh terminal (Windows Terminal recommended, not classic cmd)
-- [ ] Confirm: `conda --version` returns a version
+- [x] Download Miniconda for Windows from https://docs.conda.io/projects/miniconda/
+- [x] Install with default options
+- [x] Open a fresh terminal (Windows Terminal recommended, not classic cmd)
+- [x] Confirm: `conda --version` returns a version
 
 ### Install Node.js
 
-- [ ] Download Node LTS from https://nodejs.org/ (Windows installer)
-- [ ] Install with default options
-- [ ] Confirm: `node --version` and `npm --version` both return values
+- [x] Download Node LTS from https://nodejs.org/ (Windows installer)
+- [x] Install with default options
+- [x] Confirm: `node --version` and `npm --version` both return values
 
 ### Install Docker Desktop
 
-- [ ] Download Docker Desktop for Windows from https://www.docker.com/products/docker-desktop/
-- [ ] Install, then launch
-- [ ] Confirm: `docker --version` works in your terminal
+- [x] Download Docker Desktop for Windows from https://www.docker.com/products/docker-desktop/
+- [x] Install, then launch
+- [x] Confirm: `docker --version` works in your terminal
 - [ ] In Docker Desktop settings, ensure WSL2 backend is enabled (it's the default in current versions; this works fine even if you don't otherwise use WSL)
 
 ### Install VS Code (if not already)
 
-- [ ] You already use VS Code. Make sure these extensions are installed:
+- [x] You already use VS Code. Make sure these extensions are installed:
   - Python (Microsoft)
   - Pylance
   - PostgreSQL (Chris Kolkman or similar — for browsing the DB without leaving the editor)
@@ -142,8 +142,8 @@ You're staying on Windows native (your call, and reasonable). Use conda for the 
 
 ### Create the project structure
 
-- [ ] Pick a project location: `C:\Projects\hiddenhooks\` (or wherever fits your workflow)
-- [ ] Inside, create:
+- [x] Pick a project location: `C:\Projects\hiddenhooks\` (or wherever fits your workflow)
+- [x] Inside, create:
   ```
   hiddenhooks/
     backend/          # FastAPI + Python pipeline
@@ -156,30 +156,30 @@ You're staying on Windows native (your call, and reasonable). Use conda for the 
     README.md
     CLAUDE.md
   ```
-- [ ] Initialize git: `git init`
-- [ ] Add `.gitignore` excluding: `data/`, `private/`, `node_modules/`, `__pycache__/`, `.venv/`, `.conda/`, `.env`, `.env.local`, `*.pyc`, `.next/`
-- [ ] Optional but recommended: create a private GitHub repo and push, so you have backup
+- [x] Initialize git: `git init`
+- [x] Add `.gitignore` excluding: `data/`, `private/`, `node_modules/`, `__pycache__/`, `.venv/`, `.conda/`, `.env`, `.env.local`, `*.pyc`, `.next/`
+- [x] Optional but recommended: create a private GitHub repo and push, so you have backup
 
 ### Set up the conda environment
 
-- [ ] Open terminal in the project root
-- [ ] Run:
+- [x] Open terminal in the project root
+- [x] Run:
   ```
   conda create -n hiddenhooks python=3.11
   conda activate hiddenhooks
   conda install -c conda-forge geopandas shapely rasterio sqlalchemy psycopg2 fastapi uvicorn pydantic
   pip install osmnx anthropic python-dotenv
   ```
-- [ ] Confirm import works: `python -c "import geopandas; print(geopandas.__version__)"`
-- [ ] Save dependencies: `pip freeze > backend/requirements.txt` (note: conda envs aren't perfectly captured by pip freeze, but it's close enough for v1)
-- [ ] **If GDAL fails**: this is the moment WSL2 might be necessary. If conda's binaries don't work on your Windows install, switch to WSL2 (`wsl --install` in PowerShell as admin) and redo this step in Linux. Don't fight Windows GDAL for more than an hour.
+- [x] Confirm import works: `python -c "import geopandas; print(geopandas.__version__)"`
+- [x] Save dependencies: `pip freeze > backend/requirements.txt` (note: conda envs aren't perfectly captured by pip freeze, but it's close enough for v1)
+- [x] **If GDAL fails**: this is the moment WSL2 might be necessary. If conda's binaries don't work on your Windows install, switch to WSL2 (`wsl --install` in PowerShell as admin) and redo this step in Linux. Don't fight Windows GDAL for more than an hour.
 
 ### Initialize Claude Code in the project
 
-- [ ] Open the project in VS Code
-- [ ] Open Claude Code in the integrated terminal
-- [ ] First prompt: "Read CLAUDE.md and confirm you understand the project, current phase, and working preferences. Don't do anything else yet."
-- [ ] Verify the response reflects your preferences before proceeding
+- [x] Open the project in VS Code
+- [x] Open Claude Code in the integrated terminal
+- [x] First prompt: "Read CLAUDE.md and confirm you understand the project, current phase, and working preferences. Don't do anything else yet."
+- [x] Verify the response reflects your preferences before proceeding
 
 ---
 
@@ -187,13 +187,13 @@ You're staying on Windows native (your call, and reasonable). Use conda for the 
 
 ### Stand up Postgres + PostGIS
 
-- [ ] **Plan Mode prompt to Claude Code**: "Design a docker-compose.yml in `docker/` for local Postgres 16 + PostGIS 3.4 development. Persistent volume for data. Default credentials hiddenhooks/hiddenhooks/hiddenhooks. Exposed on port 5432. Show me the file and explain each section before writing it."
-- [ ] Read the plan, push back on anything that looks off, approve
-- [ ] Run `docker compose up -d` from the docker directory
-- [ ] Confirm container is running: `docker ps`
-- [ ] Connect with psql via Docker: `docker exec -it <container_id> psql -U hiddenhooks`
-- [ ] Inside psql: `CREATE EXTENSION IF NOT EXISTS postgis;` then `SELECT PostGIS_Version();`
-- [ ] Exit psql with `\q`
+- [x] **Plan Mode prompt to Claude Code**: "Design a docker-compose.yml in `docker/` for local Postgres 16 + PostGIS 3.4 development. Persistent volume for data. Default credentials hiddenhooks/hiddenhooks/hiddenhooks. Exposed on port 5432. Show me the file and explain each section before writing it."
+- [x] Read the plan, push back on anything that looks off, approve
+- [x] Run `docker compose up -d` from the docker directory
+- [x] Confirm container is running: `docker ps`
+- [x] Connect with psql via Docker: `docker exec -it <container_id> psql -U hiddenhooks`
+- [x] Inside psql: `CREATE EXTENSION IF NOT EXISTS postgis;` then `SELECT PostGIS_Version();` output: 3.4 USE_GEOS=1 USE_PROJ=1 USE_STATS=1
+- [x] Exit psql with `\q`
 
 ### Design the v1 schema
 

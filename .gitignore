@@ -7,3 +7,6 @@ phase-0-data/ara/Aquatic_Resource_Area_Survey_Point/Aquatic_Resource_Area_Survey
 
 data/ohn_waterbody
 data/ohn_watercourse
+
+# OSMnx download cache
+cache/

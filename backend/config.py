@@ -18,6 +18,9 @@ topRight = '43.936996398203384, -79.04603501687743'
 bottomLeft = '43.71967675630277, -79.24353684315543'
 bottomRight = '43.859370326223996, -78.93481555409967'
 
+CACHE_DIR = REPO_ROOT / "cache"
+ROADS_CACHE_PATH = CACHE_DIR / "roads_bbox.graphml"
+
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
     "postgresql+psycopg2://hiddenhooks:hiddenhooks@localhost:5432/hiddenhooks",

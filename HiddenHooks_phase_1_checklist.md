@@ -251,13 +251,13 @@ After implementation:
 - [x] Watercourse counts will likely outnumber waterbody counts substantially (streams are everywhere)
 ### Visual sanity check (do not skip)
  
-- [ ] Open QGIS
-- [ ] Layer → Add Layer → Add PostGIS Layers
-- [ ] Connect to your local Postgres (host: `localhost`, port: 5432, db: hiddenhooks, user/pass: hiddenhooks)
-- [ ] Add the candidates table as a layer (you may need two layers if QGIS struggles to render mixed geometry — filter one to polygons, one to linestrings)
-- [ ] Verify polygons render in the right place at the right scale
-- [ ] Verify watercourses **connect to** waterbodies at expected points — streams should flow into and out of lakes, not float in space disconnected
-- [ ] If linestrings appear in the wrong location or polygons and lines don't align, fix CRS handling before proceeding
+- [x] Open QGIS
+- [x] Layer → Add Layer → Add PostGIS Layers
+- [x] Connect to your local Postgres (host: `localhost`, port: 5432, db: hiddenhooks, user/pass: hiddenhooks)
+- [x] Add the candidates table as a layer (you may need two layers if QGIS struggles to render mixed geometry — filter one to polygons, one to linestrings)
+- [x] Verify polygons render in the right place at the right scale
+- [x] Verify watercourses **connect to** waterbodies at expected points — streams should flow into and out of lakes, not float in space disconnected
+- [x] If linestrings appear in the wrong location or polygons and lines don't align, fix CRS handling before proceeding
 ---
  
 ## Part 4 — Compute the one feature (1-2 hours)
@@ -268,9 +268,9 @@ For Phase 1, the only feature is `dist_to_road_meters`.
  
 Use OSMnx — easier than dealing with Ontario Road Network for v1.
  
-- [ ] **Plan Mode prompt**: "Write a script `backend/ingest/roads.py` that downloads the road network for our TEST_BBOX from OSM via OSMnx, projects it to EPSG:3161, and stores it in a `roads` table in Postgres. Cache the OSMnx download to a local file so we don't re-download on every run."
-- [ ] Verify the plan handles caching properly
-- [ ] Run it, sanity-check in QGIS as before
+- [x] **Plan Mode prompt**: "Write a script `backend/ingest/roads.py` that downloads the road network for our TEST_BBOX from OSM via OSMnx, projects it to EPSG:3161, and stores it in a `roads` table in Postgres. Cache the OSMnx download to a local file so we don't re-download on every run."
+- [x] Verify the plan handles caching properly
+- [x] Run it, sanity-check in QGIS as before
 ### Compute the feature
  
 **Plan Mode prompt**: "Write `backend/scoring/dist_to_road.py` that computes the distance from each candidate to the nearest road, in meters, and updates the `dist_to_road_meters` column. Use PostGIS `ST_Distance` with the spatial index. The candidates table has both polygon and linestring geometries; the same query should handle both (`ST_Distance` is geometry-type-agnostic). For linestrings, distance is measured from the nearest point on the line, which is the correct semantic for a stream reach. Recommend the most efficient query approach. Show the SQL before writing."

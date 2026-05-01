@@ -276,13 +276,13 @@ Use OSMnx — easier than dealing with Ontario Road Network for v1.
 **Plan Mode prompt**: "Write `backend/scoring/dist_to_road.py` that computes the distance from each candidate to the nearest road, in meters, and updates the `dist_to_road_meters` column. Use PostGIS `ST_Distance` with the spatial index. The candidates table has both polygon and linestring geometries; the same query should handle both (`ST_Distance` is geometry-type-agnostic). For linestrings, distance is measured from the nearest point on the line, which is the correct semantic for a stream reach. Recommend the most efficient query approach. Show the SQL before writing."
  
 Verify:
-- [ ] Distances are in meters (requires projected CRS — they are, since we're in EPSG:3161)
-- [ ] The "nearest" computation uses the spatial index efficiently (avoid full table scans)
-- [ ] Updates happen in a single SQL statement, not row-by-row Python
-- [ ] Both `polygon` and `reach_full` candidates get distances computed (no candidate_type filter)
+- [x] Distances are in meters (requires projected CRS — they are, since we're in EPSG:3161)
+- [x] The "nearest" computation uses the spatial index efficiently (avoid full table scans)
+- [x] Updates happen in a single SQL statement, not row-by-row Python
+- [x] Both `polygon` and `reach_full` candidates get distances computed (no candidate_type filter)
 After running:
-- [ ] Spot-check 3-5 candidates of each type in QGIS — does each distance value match your eyeball estimate?
-- [ ] `SELECT candidate_type, MIN(dist_to_road_meters), MAX(dist_to_road_meters), AVG(dist_to_road_meters), COUNT(*) FROM candidates GROUP BY candidate_type;` — sanity check distribution per type
+- [x] Spot-check 3-5 candidates of each type in QGIS — does each distance value match your eyeball estimate?
+- [x] `SELECT candidate_type, MIN(dist_to_road_meters), MAX(dist_to_road_meters), AVG(dist_to_road_meters), COUNT(*) FROM candidates GROUP BY candidate_type;` — sanity check distribution per type
 ---
  
 ## Part 5 — Backend API (2-3 hours)
@@ -311,21 +311,21 @@ This is the visually-important part. You said you want it polished and easy to u
  
 ### Initialize Next.js with TypeScript
  
-- [x] In `frontend/`: `npx create-next-app@latest . --typescript --tailwind --app --eslint`
-- [x] Choose default options for the rest
-- [x] Confirm it runs: `npm run dev`, open `http://localhost:3000`
+- [ ] In `frontend/`: `npx create-next-app@latest . --typescript --tailwind --app --eslint`
+- [ ] Choose default options for the rest
+- [ ] Confirm it runs: `npm run dev`, open `http://localhost:3000`
 ### Set up shadcn/ui
  
-- [x] Run `npx shadcn-ui@latest init` (or whatever the current command is — check shadcn's docs)
+- [ ] Run `npx shadcn-ui@latest init` (or whatever the current command is — check shadcn's docs)
 - [ ] Choose "Default" style, "Slate" or "Stone" base color (warmer than Slate, fits the cartographic aesthetic)
-- [x] Install initial components you'll need: `npx shadcn-ui@latest add button card sheet badge`
+- [ ] Install initial components you'll need: `npx shadcn-ui@latest add button card sheet badge`
 ### Set up Mapbox
  
-- [x] Sign up at mapbox.com (free tier is plenty for personal use)
-- [x] Get your public access token from Account → Tokens
-- [x] Save in `frontend/.env.local`: `NEXT_PUBLIC_MAPBOX_TOKEN=pk.your_token_here`
-- [x] Add `.env.local` to `.gitignore` (should already be there from Next.js defaults)
-- [x] Install: `npm install mapbox-gl react-map-gl`
+- [ ] Sign up at mapbox.com (free tier is plenty for personal use)
+- [ ] Get your public access token from Account → Tokens
+- [ ] Save in `frontend/.env.local`: `NEXT_PUBLIC_MAPBOX_TOKEN=pk.your_token_here`
+- [ ] Add `.env.local` to `.gitignore` (should already be there from Next.js defaults)
+- [ ] Install: `npm install mapbox-gl react-map-gl`
 ### Create a custom basemap style (this is what makes it feel cartographic)
  
 - [ ] Open Mapbox Studio (studio.mapbox.com)

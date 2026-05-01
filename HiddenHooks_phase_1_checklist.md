@@ -322,10 +322,10 @@ This is the visually-important part. You said you want it polished and easy to u
 ### Set up Mapbox
  
 - [x] Sign up at mapbox.com (free tier is plenty for personal use)
-- [ ] Get your public access token from Account → Tokens
-- [ ] Save in `frontend/.env.local`: `NEXT_PUBLIC_MAPBOX_TOKEN=pk.your_token_here`
-- [ ] Add `.env.local` to `.gitignore` (should already be there from Next.js defaults)
-- [ ] Install: `npm install mapbox-gl react-map-gl`
+- [x] Get your public access token from Account → Tokens
+- [x] Save in `frontend/.env.local`: `NEXT_PUBLIC_MAPBOX_TOKEN=pk.your_token_here`
+- [x] Add `.env.local` to `.gitignore` (should already be there from Next.js defaults)
+- [x] Install: `npm install mapbox-gl react-map-gl`
 ### Create a custom basemap style (this is what makes it feel cartographic)
  
 - [ ] Open Mapbox Studio (studio.mapbox.com)

@@ -292,17 +292,17 @@ After running:
 **Plan Mode prompt**: "Create a FastAPI app in `backend/api/`. One endpoint: `GET /candidates` returns all candidates as a GeoJSON FeatureCollection, ranked by `dist_to_road_meters` descending (farther from roads = higher rank for v1's trivial scoring). Each feature includes: candidate ID, name, candidate_type, source_dataset, dist_to_road_meters, surface_area_m2 (nullable), length_m (nullable), rank (1-indexed). The FeatureCollection will contain mixed geometry types (Polygon/MultiPolygon for waterbodies, LineString/MultiLineString for watercourses) — this is valid GeoJSON and Mapbox handles it natively. Geometries returned in WGS84 (EPSG:4326) since Mapbox expects WGS84 even though storage is EPSG:3161. Use Pydantic models. Configure CORS for `http://localhost:3000`. Show me the endpoint signature and example response shape before generating."
  
 Verify in the plan:
-- [ ] Response is valid GeoJSON FeatureCollection (not custom format)
-- [ ] Mixed geometry types in one FeatureCollection are explicitly handled
-- [ ] Reprojection to EPSG:4326 happens at query time via `ST_Transform`
-- [ ] CORS configured correctly for local dev
-- [ ] Pydantic models validate the response shape, including nullable area/length fields
+- [x] Response is valid GeoJSON FeatureCollection (not custom format)
+- [x] Mixed geometry types in one FeatureCollection are explicitly handled
+- [x] Reprojection to EPSG:4326 happens at query time via `ST_Transform`
+- [x] CORS configured correctly for local dev
+- [x] Pydantic models validate the response shape, including nullable area/length fields
 ### Run and test
  
-- [ ] `cd backend && uvicorn api.main:app --reload --port 8000`
-- [ ] Open `http://localhost:8000/candidates` in browser — should see JSON response
-- [ ] Validate the GeoJSON: paste into [geojson.io](http://geojson.io) — should render on a map there
-- [ ] Open `http://localhost:8000/docs` for the auto-generated Swagger UI
+- [x] `cd backend && uvicorn api.main:app --reload --port 8000`
+- [x] Open `http://localhost:8000/candidates` in browser — should see JSON response
+- [x] Validate the GeoJSON: paste into [geojson.io](http://geojson.io) — should render on a map there
+- [x] Open `http://localhost:8000/docs` for the auto-generated Swagger UI
 ---
  
 ## Part 6 — Frontend (4-6 hours)
@@ -311,17 +311,17 @@ This is the visually-important part. You said you want it polished and easy to u
  
 ### Initialize Next.js with TypeScript
  
-- [ ] In `frontend/`: `npx create-next-app@latest . --typescript --tailwind --app --eslint`
-- [ ] Choose default options for the rest
-- [ ] Confirm it runs: `npm run dev`, open `http://localhost:3000`
+- [x] In `frontend/`: `npx create-next-app@latest . --typescript --tailwind --app --eslint`
+- [x] Choose default options for the rest
+- [x] Confirm it runs: `npm run dev`, open `http://localhost:3000`
 ### Set up shadcn/ui
  
-- [ ] Run `npx shadcn-ui@latest init` (or whatever the current command is — check shadcn's docs)
+- [x] Run `npx shadcn-ui@latest init` (or whatever the current command is — check shadcn's docs)
 - [ ] Choose "Default" style, "Slate" or "Stone" base color (warmer than Slate, fits the cartographic aesthetic)
-- [ ] Install initial components you'll need: `npx shadcn-ui@latest add button card sheet badge`
+- [x] Install initial components you'll need: `npx shadcn-ui@latest add button card sheet badge`
 ### Set up Mapbox
  
-- [ ] Sign up at mapbox.com (free tier is plenty for personal use)
+- [x] Sign up at mapbox.com (free tier is plenty for personal use)
 - [ ] Get your public access token from Account → Tokens
 - [ ] Save in `frontend/.env.local`: `NEXT_PUBLIC_MAPBOX_TOKEN=pk.your_token_here`
 - [ ] Add `.env.local` to `.gitignore` (should already be there from Next.js defaults)

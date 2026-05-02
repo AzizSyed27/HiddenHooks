@@ -311,82 +311,82 @@ This is the visually-important part. You said you want it polished and easy to u
  
 ### Initialize Next.js with TypeScript
  
-- [ ] In `frontend/`: `npx create-next-app@latest . --typescript --tailwind --app --eslint`
-- [ ] Choose default options for the rest
-- [ ] Confirm it runs: `npm run dev`, open `http://localhost:3000`
+- [x] In `frontend/`: `npx create-next-app@latest . --typescript --tailwind --app --eslint`
+- [x] Choose default options for the rest
+- [x] Confirm it runs: `npm run dev`, open `http://localhost:3000`
 ### Set up shadcn/ui
  
-- [ ] Run `npx shadcn-ui@latest init` (or whatever the current command is — check shadcn's docs)
-- [ ] Choose "Default" style, "Slate" or "Stone" base color (warmer than Slate, fits the cartographic aesthetic)
-- [ ] Install initial components you'll need: `npx shadcn-ui@latest add button card sheet badge`
+- [x] Run `npx shadcn-ui@latest init` (or whatever the current command is — check shadcn's docs)
+- [x] Choose "Default" style, "Slate" or "Stone" base color (warmer than Slate, fits the cartographic aesthetic)
+- [x] Install initial components you'll need: `npx shadcn-ui@latest add button card sheet badge`
 ### Set up Mapbox
  
-- [ ] Sign up at mapbox.com (free tier is plenty for personal use)
-- [ ] Get your public access token from Account → Tokens
-- [ ] Save in `frontend/.env.local`: `NEXT_PUBLIC_MAPBOX_TOKEN=pk.your_token_here`
-- [ ] Add `.env.local` to `.gitignore` (should already be there from Next.js defaults)
-- [ ] Install: `npm install mapbox-gl react-map-gl`
+- [x] Sign up at mapbox.com (free tier is plenty for personal use)
+- [x] Get your public access token from Account → Tokens
+- [x] Save in `frontend/.env.local`: `NEXT_PUBLIC_MAPBOX_TOKEN=pk.your_token_here`
+- [x] Add `.env.local` to `.gitignore` (should already be there from Next.js defaults)
+- [x] Install: `npm install mapbox-gl react-map-gl`
 ### Create a custom basemap style (this is what makes it feel cartographic)
  
-- [ ] Open Mapbox Studio (studio.mapbox.com)
-- [ ] Create a new style starting from "Outdoors" template
-- [ ] Customize the palette to muted earth tones:
+- [x] Open Mapbox Studio (studio.mapbox.com)
+- [x] Create a new style starting from "Outdoors" template
+- [x] Customize the palette to muted earth tones:
   - Land: warm beige (#e8dfd0 ish)
   - Water: muted blue (#a8c4d4 ish)
   - Forest: muted green (#aabc9a ish)
   - Roads: subtle gray, lower contrast than default
   - Labels: serif font if available, smaller than default
-- [ ] Reference: National Geographic's online maps aesthetic
-- [ ] Publish the style
-- [ ] Copy the style URL (looks like `mapbox://styles/yourname/styleid`)
-- [ ] Save in `.env.local`: `NEXT_PUBLIC_MAPBOX_STYLE=mapbox://styles/yourname/styleid`
+- [x] Reference: National Geographic's online maps aesthetic
+- [x] Publish the style
+- [x] Copy the style URL (looks like `mapbox://styles/yourname/styleid`)
+- [x] Save in `.env.local`: `NEXT_PUBLIC_MAPBOX_STYLE=mapbox://styles/yourname/styleid`
 This basemap step is what separates a generic Mapbox app from something that feels like HiddenHooks. Don't skip it.
  
 ### Add Framer Motion and Lucide
  
-- [ ] `npm install framer-motion lucide-react`
+- [x] `npm install framer-motion lucide-react`
 ### Set up typography
  
 - [ ] In `frontend/app/layout.tsx`, configure two fonts via `next/font/google`:
-  - **Inter** for UI chrome
-  - **Source Serif 4** (or Lora) for body content in candidate cards/details
+  - **Poppins** for UI chrome
+  - **Inter** (or Lora) for body content in candidate cards/details
 - [ ] Set up Tailwind theme to expose them as `font-sans` and `font-serif`
 ### Build the map page
  
 **Plan Mode prompt**: "Create a Next.js page in `frontend/app/page.tsx` for the HiddenHooks map view. Layout: full-screen Mapbox map (using react-map-gl with the custom basemap from NEXT_PUBLIC_MAPBOX_STYLE), centered on Rouge Park. A collapsible left side panel (320px wide) using shadcn Sheet component, showing the ranked candidate list. On mount, fetch /candidates from `http://localhost:8000`. The FeatureCollection has mixed geometry — render in two layers: polygons as filled shapes with semi-transparent fill, linestrings (watercourses) as 2-3px wide lines. Both layers use the same rank-based color scale (high-rank = brighter/more saturated, low-rank = muted). Click a polygon, line, OR list item, the side panel highlights that candidate and shows: name (or 'Unnamed [type]' — distinguish 'Unnamed pond' from 'Unnamed stream reach' based on candidate_type), rank, distance to road, area or length depending on type, and a small breakdown card. Use Framer Motion for the side panel slide-in. Lucide icons for the chevron and any toggles. Show me the component structure and proposed file layout before generating."
  
 Verify in the plan:
-- [ ] Components are split sensibly (Map, CandidateList, CandidateCard, etc.) — not one giant page file
-- [ ] Mapbox uses two separate layer definitions: one for polygons (fill type), one for linestrings (line type)
-- [ ] Both layers share the same data source (the FeatureCollection) but filter by `$type` to render appropriately
-- [ ] State management is local React state (no need for global state in Phase 1)
-- [ ] Loading/error states are handled
-- [ ] Polygon and line styling is computed from rank, not hardcoded
-- [ ] Click handlers don't fight Mapbox's native pan/zoom
-- [ ] List item rendering distinguishes pond vs stream reach in the displayed name and metadata
+- [x] Components are split sensibly (Map, CandidateList, CandidateCard, etc.) — not one giant page file
+- [x] Mapbox uses two separate layer definitions: one for polygons (fill type), one for linestrings (line type)
+- [x] Both layers share the same data source (the FeatureCollection) but filter by `$type` to render appropriately
+- [x] State management is local React state (no need for global state in Phase 1)
+- [x] Loading/error states are handled
+- [x] Polygon and line styling is computed from rank, not hardcoded
+- [x] Click handlers don't fight Mapbox's native pan/zoom
+- [x] List item rendering distinguishes pond vs stream reach in the displayed name and metadata
 After implementation, polish pass:
-- [ ] List items use the serif font for the candidate name (subtle but matters)
-- [ ] Spacing is generous, not cramped — let the design breathe
-- [ ] The selected candidate's polygon should visually pop (thicker stroke, slight glow)
-- [ ] Side panel collapse animation feels smooth, not jerky
-- [ ] If something feels off aesthetically, fix it now — bad UX patterns calcify
+- [x] List items use the serif font for the candidate name (subtle but matters)
+- [x] Spacing is generous, not cramped — let the design breathe
+- [x] The selected candidate's polygon should visually pop (thicker stroke, slight glow)
+- [x] Side panel collapse animation feels smooth, not jerky
+- [x] If something feels off aesthetically, fix it now — bad UX patterns calcify
 ---
  
 ## Part 7 — End-to-end smoke test (30 min)
  
 The moment of truth.
  
-- [ ] Stop everything. Restart Docker, restart backend (uvicorn), restart frontend (npm run dev). Fresh slate.
-- [ ] Load `http://localhost:3000`
-- [ ] Map loads with custom basemap (not default Mapbox blue/gray)
-- [ ] Both polygon candidates (filled shapes) and watercourse candidates (lines) appear, color-coded by rank
-- [ ] Side panel shows ranked list mixing both types
-- [ ] Click a polygon — both shape and list highlight; card shows area
-- [ ] Click a watercourse line — both line and list highlight; card shows length
-- [ ] Walk through the data path mentally: this feature came from a shapefile → ingestion script → Postgres → FastAPI query → JSON response → React state → Mapbox layer. You should be able to explain each hop.
-- [ ] Pick the top-ranked candidate. Does its location make sense — is it actually in a remote part of Rouge Park, far from roads?
-- [ ] Pick a bottom-ranked candidate. Is it next to a road as expected?
-- [ ] Verify watercourses connect waterbodies visually — streams flow into and out of polygons, not floating disconnected
+- [x] Stop everything. Restart Docker, restart backend (uvicorn), restart frontend (npm run dev). Fresh slate.
+- [x] Load `http://localhost:3000`
+- [x] Map loads with custom basemap (not default Mapbox blue/gray)
+- [x] Both polygon candidates (filled shapes) and watercourse candidates (lines) appear, color-coded by rank
+- [x] Side panel shows ranked list mixing both types
+- [x] Click a polygon — both shape and list highlight; card shows area
+- [x] Click a watercourse line — both line and list highlight; card shows length
+- [x] Walk through the data path mentally: this feature came from a shapefile → ingestion script → Postgres → FastAPI query → JSON response → React state → Mapbox layer. You should be able to explain each hop.
+- [x] Pick the top-ranked candidate. Does its location make sense — is it actually in a remote part of Rouge Park, far from roads?
+- [x] Pick a bottom-ranked candidate. Is it next to a road as expected?
+- [x] Verify watercourses connect waterbodies visually — streams flow into and out of polygons, not floating disconnected
 If both top and bottom rankings make geographic sense across both feature types, **Phase 1 is functionally complete.**
  
 ---
@@ -397,8 +397,8 @@ This is the part most people skip, and it's the part that compounds across phase
  
 ### Document
  
-- [ ] Update `README.md` with: project description, how to run locally (Docker → backend → frontend, in that order), tech stack, current phase
-- [ ] Update `CLAUDE.md` with anything that changed about the architecture during Phase 1
+- [x] Update `README.md` with: project description, how to run locally (Docker → backend → frontend, in that order), tech stack, current phase
+- [x] Update `CLAUDE.md` with anything that changed about the architecture during Phase 1
 - [ ] Create `docs/phase_1_reflection.md` with these prompts:
   - What worked smoothly?
   - What took longer than expected, and why?
@@ -409,9 +409,9 @@ This is the part most people skip, and it's the part that compounds across phase
   - What's one thing you'd do differently if starting Phase 1 over?
 ### Commit
  
-- [ ] `git add -A && git commit -m "Phase 1: vertical slice complete"`
-- [ ] Push to your private GitHub repo if you set one up
-- [ ] Tag the commit: `git tag phase-1-complete && git push --tags`
+- [x] `git add -A && git commit -m "Phase 1: vertical slice complete"`
+- [x] Push to your private GitHub repo if you set one up
+- [x] Tag the commit: `git tag phase-1-complete && git push --tags`
 The tag matters — it gives you a "known good" point to roll back to if Phase 2 goes sideways.
  
 ---
@@ -419,11 +419,11 @@ The tag matters — it gives you a "known good" point to roll back to if Phase 2
 ## Done criteria
  
 You're done with Phase 1 when:
-- [ ] A live page shows ranked candidates in the test region — both waterbody polygons and watercourse linestrings
-- [ ] Custom muted basemap is rendering, not default Mapbox
-- [ ] Click-to-select works for polygons, lines, and list items
-- [ ] You can explain every layer of the stack out loud
-- [ ] The repo is committed, tagged, and documented
+- [x] A live page shows ranked candidates in the test region — both waterbody polygons and watercourse linestrings
+- [x] Custom muted basemap is rendering, not default Mapbox
+- [x] Click-to-select works for polygons, lines, and list items
+- [x] You can explain every layer of the stack out loud
+- [x] The repo is committed, tagged, and documented
 You do **not** need to:
 - Have multiple scoring features (Phase 2 territory)
 - Handle the full FMZ 16 region (Phase 2 territory)

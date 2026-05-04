@@ -103,32 +103,32 @@ Recommendation: **Option B** is simpler and good enough. Download the Ontario pr
 **Plan Mode prompt**: "Create a `regions` table in the candidates database. Columns: id, name (text, e.g., 'FMZ 16', 'FMZ 17', 'Ontario Land'), region_type (text, 'fmz' or 'land_mask'), geom (geometry(MultiPolygon, 3161)). Spatial GIST index on geom. Also write an ingestion script `backend/ingest/regions.py` that reads the FMZ 16 polygon, FMZ 17 polygon, and the Ontario land mask polygon, reprojects each to EPSG:3161, and inserts them. Idempotent on (name, region_type). Show me the SQL and Python plan before generating."
 
 Verify in the plan:
-- [ ] Geometry column is `MultiPolygon` (FMZ boundaries are often multipart)
-- [ ] CRS is explicit and matches the rest of the project (3161)
-- [ ] Spatial index exists
-- [ ] Idempotency uses upsert on (name, region_type), not delete-and-reinsert
-- [ ] All three regions get loaded in one script run
+- [x] Geometry column is `MultiPolygon` (FMZ boundaries are often multipart)
+- [x] CRS is explicit and matches the rest of the project (3161)
+- [x] Spatial index exists
+- [x] Idempotency uses upsert on (name, region_type), not delete-and-reinsert
+- [x] All three regions get loaded in one script run
 
 After implementation:
-- [ ] Run the script
-- [ ] `SELECT name, region_type, ST_Area(geom)/1e6 AS area_km2 FROM regions ORDER BY area_km2 DESC;` — sanity check the areas. FMZ 17 should be larger than FMZ 16 by area (more rural land). Both should be in the thousands of km².
-- [ ] Visual check in QGIS: load the regions table, confirm both FMZs and the land mask render where expected, and that FMZ 16 and FMZ 17 share a clean boundary
+- [x] Run the script
+- [x] `SELECT name, region_type, ST_Area(geom)/1e6 AS area_km2 FROM regions ORDER BY area_km2 DESC;` — sanity check the areas. FMZ 17 should be larger than FMZ 16 by area (more rural land). Both should be in the thousands of km².
+- [x] Visual check in QGIS: load the regions table, confirm both FMZs and the land mask render where expected, and that FMZ 16 and FMZ 17 share a clean boundary
 
 ### Define working bboxes
 
 For driver-level filtering during shapefile reads, you need bounding boxes:
 
-- [ ] In `backend/config.py`, define:
+- [x] In `backend/config.py`, define:
   - `FMZ16_BBOX` = envelope of the FMZ 16 polygon, in EPSG:4326
   - `FMZ17_BBOX` = envelope of the FMZ 17 polygon, in EPSG:4326
   - `COMBINED_BBOX` = union envelope of both, in EPSG:4326
   - `ROADS_BBOX` = COMBINED_BBOX expanded by 5km (fixes Phase 1's edge effect across either FMZ boundary)
-- [ ] Keep `TEST_BBOX` available as a fallback for fast iteration during scoring development — running the full scoring pipeline against both FMZs will not be quick
+- [x] Keep `TEST_BBOX` available as a fallback for fast iteration during scoring development — running the full scoring pipeline against both FMZs will not be quick
 
 ### Merge to main
 
-- [ ] Branch sanity check: regions table populated with three polygons, FMZ 16 and FMZ 17 are visibly adjacent, areas are in the right ballpark
-- [ ] Merge `phase-2/01-fmz-regions` to `main`
+- [x] Branch sanity check: regions table populated with three polygons, FMZ 16 and FMZ 17 are visibly adjacent, areas are in the right ballpark
+- [x] Merge `phase-2/01-fmz-regions` to `main`
 
 ---
 

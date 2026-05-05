@@ -36,6 +36,9 @@ COMBINED_BBOX = (-83.1173, 41.9094, -77.5475, 45.2666)
 # candidates near either FMZ boundary aren't artificially far from any road.
 ROADS_BBOX = (-83.1859, 41.7160, -77.4188, 45.3463)
 
+# Tunable: length of each reach_segment child created during Part 3 segmentation.
+SEGMENT_LENGTH_M = 200
+
 CACHE_DIR = REPO_ROOT / "cache"
 ROADS_CACHE_PATH = CACHE_DIR / "roads_fmz_combined.graphml"
 

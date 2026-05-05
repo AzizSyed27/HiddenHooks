@@ -209,14 +209,14 @@ After implementation:
 
 This is the moment of truth for the simplification decision.
 
-- [ ] Run `backend/scoring/dist_to_road.py` against the new candidates table
-- [ ] **Note the elapsed time.** Phase 1 was 512s for 2,888 candidates. With simplification + larger candidate set + buffered roads, the per-candidate cost should drop sharply. If total runtime exceeds an hour for the full two-region set, the simplification didn't take effect or there's a different bottleneck — debug before moving on.
-- [ ] Spot check 5 candidates of each type, in each FMZ, in QGIS — do distance values still match eyeball estimates?
+- [x] Run `backend/scoring/dist_to_road.py` against the new candidates table
+- [x] **Note the elapsed time.** Phase 1 was 512s for 2,888 candidates. With simplification + larger candidate set + buffered roads, the per-candidate cost should drop sharply. If total runtime exceeds an hour for the full two-region set, the simplification didn't take effect or there's a different bottleneck — debug before moving on.
+- [x] Spot check 5 candidates of each type, in each FMZ, in QGIS — do distance values still match eyeball estimates?
 
 ### Merge to main
 
-- [ ] Branch sanity check: counts make sense per-region, no Lake Ontario candidates, scoring runtime is reasonable
-- [ ] Merge `phase-2/02-reingest` to `main`
+- [x] Branch sanity check: counts make sense per-region, no Lake Ontario candidates, scoring runtime is reasonable
+- [x] Merge `phase-2/02-reingest` to `main`
 
 ---
 
@@ -226,8 +226,8 @@ Take each `reach_full` row, walk its geometry, and emit `reach_segment` children
 
 ### Add the segmentation config parameter
 
-- [ ] In `backend/config.py`, add `SEGMENT_LENGTH_M = 200` with a comment explaining this is tunable
-- [ ] Anywhere you reference segment length downstream, import from config — no magic numbers
+- [x] In `backend/config.py`, add `SEGMENT_LENGTH_M = 200` with a comment explaining this is tunable
+- [x] Anywhere you reference segment length downstream, import from config — no magic numbers
 
 ### Write the segmentation script
 
@@ -240,12 +240,12 @@ Idempotency: deleting all existing reach_segments before re-segmenting is fine h
 Show me the algorithm and SQL plan before generating, especially the MultiLineString handling and the boundary cases (segments shorter than SEGMENT_LENGTH_M, very short reach_full inputs)."
 
 Verify in the plan:
-- [ ] MultiLineString handling is explicit (explode to LineStrings, segment each, parent_id same for all)
-- [ ] Last-segment-shorter-than-200m case is handled (kept, not dropped or merged)
-- [ ] reach_full with length < SEGMENT_LENGTH_M is handled (becomes a single reach_segment, or stays as reach_full only — pick one and document)
-- [ ] Name inheritance: child segments get parent's name (so "Willowgrove Creek" segments are still labeled "Willowgrove Creek" in the panel)
-- [ ] **fmz_zone inheritance** from parent — call this out explicitly in the INSERT
-- [ ] OHN ID inheritance: store parent's OHN ID on segments too, for traceability
+- [x] MultiLineString handling is explicit (explode to LineStrings, segment each, parent_id same for all)
+- [x] Last-segment-shorter-than-200m case is handled (kept, not dropped or merged)
+- [x] reach_full with length < SEGMENT_LENGTH_M is handled (becomes a single reach_segment, or stays as reach_full only — pick one and document)
+- [x] Name inheritance: child segments get parent's name (so "Willowgrove Creek" segments are still labeled "Willowgrove Creek" in the panel)
+- [x] **fmz_zone inheritance** from parent — call this out explicitly in the INSERT
+- [x] OHN ID inheritance: store parent's OHN ID on segments too, for traceability
 
 ### Decide what reach_full rows do after segmentation
 
@@ -254,17 +254,27 @@ When a `reach_full` is segmented, do you keep it in the candidates table, or rem
 - Recommendation: **keep the `reach_full` row** (it's the parent record, has the OHN ID, useful for "the parent of this segment"), but **filter it out of API queries** when it has reach_segment children. The query is `WHERE NOT (candidate_type = 'reach_full' AND id IN (SELECT DISTINCT parent_candidate_id FROM candidates WHERE parent_candidate_id IS NOT NULL))` — or store an `is_active` boolean on candidates and update it during segmentation.
 - [ ] Pick one approach. Document it. Apply it to the API query in Part 8.
 
+## How active candidates are tracked after segmentation
+
+- Decision: add an `is_active BOOLEAN NOT NULL DEFAULT TRUE` column to candidates. The segmentation script flips parents to FALSE after inserting their children, in the same transaction. All downstream queries filter with WHERE is_active = TRUE.
+- Why this approach over the inline-subquery alternative: the boolean is shorter to remember in every query, indexes naturally, and generalizes if future phases add other reasons a candidate might be inactive (private land, regulatory exclusion, etc.). The drift risk is bounded because only one script (segment_reaches.py) writes to the column, and it does so atomically with segment inserts.
+
+- [x] Add migration 007_add_is_active.sql (or next available number): ALTER TABLE candidates ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT TRUE; plus an index on is_active for the common filter.
+- [x] Apply the migration manually (same pattern as other Phase 2 migrations).
+- [x] Update segment_reaches.py to flip parents off in the same transaction as the segment INSERT.
+- [x] Document the rule in CLAUDE.md: "Active candidates are filtered with WHERE is_active = TRUE. The flag is maintained exclusively by segment_reaches.py. Don't write queries that ignore it; don't write code that toggles it from elsewhere."
+
 ### Sanity checks
 
 After running the script:
-- [ ] `SELECT fmz_zone, candidate_type, COUNT(*) FROM candidates GROUP BY fmz_zone, candidate_type;` — should now show reach_segment as a large number in each region, reach_full unchanged
-- [ ] `SELECT parent_candidate_id, SUM(length_m) AS total_segment_length, p.length_m AS parent_length, p.fmz_zone FROM candidates c JOIN candidates p ON c.parent_candidate_id = p.id WHERE c.candidate_type='reach_segment' GROUP BY parent_candidate_id, p.length_m, p.fmz_zone LIMIT 10;` — for each parent, the sum of segment lengths should be ≈ parent length (within rounding)
-- [ ] Pick one named river you know in **each** FMZ (e.g., Willowgrove Creek for FMZ 16, something in the Trent system for FMZ 17) and confirm each has been split into the expected number of segments
-- [ ] QGIS visual: load reach_segments only, confirm they look like a continuous river rendered in alternating colors (color by `id % 2`)
+- [x] `SELECT fmz_zone, candidate_type, COUNT(*) FROM candidates GROUP BY fmz_zone, candidate_type;` — should now show reach_segment as a large number in each region, reach_full unchanged
+- [x] `SELECT parent_candidate_id, SUM(length_m) AS total_segment_length, p.length_m AS parent_length, p.fmz_zone FROM candidates c JOIN candidates p ON c.parent_candidate_id = p.id WHERE c.candidate_type='reach_segment' GROUP BY parent_candidate_id, p.length_m, p.fmz_zone LIMIT 10;` — for each parent, the sum of segment lengths should be ≈ parent length (within rounding)
+- [x] Pick one named river you know in **each** FMZ (e.g., Willowgrove Creek for FMZ 16, something in the Trent system for FMZ 17) and confirm each has been split into the expected number of segments
+- [x] QGIS visual: load reach_segments only, confirm they look like a continuous river rendered in alternating colors (color by `id % 2`)
 
 ### Merge to main
 
-- [ ] Merge `phase-2/03-segmentation` to `main`
+- [x] Merge `phase-2/03-segmentation` to `main`
 
 ---
 
@@ -575,7 +585,7 @@ Surface sub-scores, FMZ identity, confidence tiers, and weight controls in the U
 4. If fmz query param is set, filter to that region. If not, return both with their per-region ranks.
 5. Order results by composite DESC across the full result set (ties broken by id).
 6. Response properties expand to include: fmz_zone, h_score, a_score, f_score, e_score, f_confidence, f_species, a_dist_to_trail_m, a_dist_to_parking_m, dist_to_road_meters, composite, rank (per-region).
-7. Filter out reach_full rows that have segmented children.
+7. Filter out reach_full rows that have segmented children using WHERE is_active = TRUE (per Part 3's decision). This is the active-candidate filter; every scoring query and every API query uses it.
 8. Add GET /health endpoint (simple, returns {status: ok}).
 9. Add GET /regions endpoint that returns the list of available FMZs with candidate counts (for the frontend region selector).
 

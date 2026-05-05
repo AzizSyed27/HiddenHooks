@@ -9,6 +9,7 @@ OHN_WATERBODY_DIR = REPO_ROOT / "phase-0-data/ohn/Ontario_Hydro_Network_(OHN)_-_
 OHN_WATERCOURSE_DIR = REPO_ROOT / "phase-0-data/ohn/Ontario_Hydro_Network_(OHN)_-_Watercourse"
 FMZ_DIR = REPO_ROOT / "data/fmz/Fisheries_Management_Zone"
 ONTARIO_BOUNDARY_DIR = REPO_ROOT / "data/ontario_boundary/Province"
+GREAT_LAKES_DIR = REPO_ROOT / "data/great_lakes/ne_10m_lakes"
 
 #Keeping testbox and corner coordinates as fallbacks.
 # Test region: ~20 km radius around Rouge National Urban Park, Scarborough, ON
@@ -36,7 +37,7 @@ COMBINED_BBOX = (-83.1173, 41.9094, -77.5475, 45.2666)
 ROADS_BBOX = (-83.1859, 41.7160, -77.4188, 45.3463)
 
 CACHE_DIR = REPO_ROOT / "cache"
-ROADS_CACHE_PATH = CACHE_DIR / "roads_bbox.graphml"
+ROADS_CACHE_PATH = CACHE_DIR / "roads_fmz_combined.graphml"
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",

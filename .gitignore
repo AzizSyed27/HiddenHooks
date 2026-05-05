@@ -9,5 +9,6 @@ data/ohn_waterbody
 data/ohn_watercourse
 data/fmz
 data/ontario_boundary/
+data/great_lakes
 # OSMnx download cache
 cache/

@@ -147,14 +147,14 @@ The schema gets a small change: add an `fmz_zone TEXT NOT NULL` column. You're g
 **Plan Mode prompt**: "Add a `fmz_zone TEXT NOT NULL` column to the candidates table, with `CHECK (fmz_zone IN ('FMZ16', 'FMZ17'))`. Create a B-tree index on fmz_zone (we'll filter and group-by often). Show the migration before generating, and call out: since the table currently has Phase 1 data with no fmz_zone, the cleanest path is `TRUNCATE candidates RESTART IDENTITY CASCADE` and then re-ingest from scratch under Part 2 — no need to retrofit existing rows."
 
 Verify in the plan:
-- [ ] CHECK constraint locks down the allowed values
-- [ ] Index exists for fast region filtering
-- [ ] Phase 1 data is dropped, not retrofitted (cleaner)
+- [x] CHECK constraint locks down the allowed values
+- [x] Index exists for fast region filtering
+- [x] Phase 1 data is dropped, not retrofitted (cleaner)
 
 ### Decide whether to drop and re-ingest, or to migrate
 
-- [ ] Recommendation: drop and re-ingest. The Phase 1 candidates table covers a tiny bbox; trying to add to it leaves stale rows. `TRUNCATE candidates RESTART IDENTITY CASCADE;` and re-run.
-- [ ] If you've manually annotated anything in Phase 1, export it first. (You probably haven't.)
+- [x] Recommendation: drop and re-ingest. The Phase 1 candidates table covers a tiny bbox; trying to add to it leaves stale rows. `TRUNCATE candidates RESTART IDENTITY CASCADE;` and re-run.
+- [x] If you've manually annotated anything in Phase 1, export it first. (You probably haven't.)
 
 ### Update the waterbody ingestion script
 
@@ -172,38 +172,38 @@ Edge case: a centroid can only be in one FMZ at a time (they don't overlap), but
 Show me the updated script structure before generating."
 
 Verify in the plan:
-- [ ] Both FMZ polygons are loaded once, not per-feature
-- [ ] Centroid containment is computed in EPSG:3161 (after reprojection), not in source CRS
-- [ ] Land mask intersection check uses the spatial index
-- [ ] `ST_SimplifyPreserveTopology` is applied via PostGIS in the INSERT, not Python (faster, idempotent across runs)
-- [ ] `"NaN"` string normalization is applied to all text fields
-- [ ] FMZ tagging uses ST_Contains or ST_Within with the spatial index, not a brute scan
+- [x] Both FMZ polygons are loaded once, not per-feature
+- [x] Centroid containment is computed in EPSG:3161 (after reprojection), not in source CRS
+- [x] Land mask intersection check uses the spatial index
+- [x] `ST_SimplifyPreserveTopology` is applied via PostGIS in the INSERT, not Python (faster, idempotent across runs)
+- [x] `"NaN"` string normalization is applied to all text fields
+- [x] FMZ tagging uses ST_Contains or ST_Within with the spatial index, not a brute scan
 
 After implementation:
-- [ ] Run the script. Note the elapsed time.
-- [ ] `SELECT fmz_zone, COUNT(*) FROM candidates WHERE source_dataset='waterbody' GROUP BY fmz_zone;` — both should be populated. FMZ 17 likely has more polygon candidates (more lakes in the Kawarthas).
-- [ ] QGIS sanity check: load the polygons, color by `fmz_zone`, confirm they cover both FMZ land areas with no Lake Ontario candidates and a clean visible boundary along the FMZ 16/17 line
+- [x] Run the script. Note the elapsed time.
+- [x] `SELECT fmz_zone, COUNT(*) FROM candidates WHERE source_dataset='waterbody' GROUP BY fmz_zone;` — both should be populated. FMZ 17 likely has more polygon candidates (more lakes in the Kawarthas).
+- [x] QGIS sanity check: load the polygons, color by `fmz_zone`, confirm they cover both FMZ land areas with no Lake Ontario candidates and a clean visible boundary along the FMZ 16/17 line
 
 ### Update the watercourse ingestion script
 
 **Plan Mode prompt**: Mirror the waterbody changes for `backend/ingest/ohn_watercourse.py`. Same dual-FMZ centroid filter, same land mask intersection, same simplification, same fmz_zone tagging. `candidate_type='reach_full'` and `source_dataset='watercourse'` unchanged. Show me the diff from the waterbody script — call out anything that's different beyond file paths and type/length-vs-area.
 
 Verify in the plan:
-- [ ] MultiLineString handling is preserved (do NOT explode to LineStrings here — segmentation in Part 3 will handle that)
-- [ ] Length is computed in EPSG:3161 after simplification
-- [ ] Centroid containment for linestrings: PostGIS `ST_Centroid` works for linestrings; the centroid of a long winding stream might be in surprising places, but it's still a defensible filter
-- [ ] A reach_full whose centroid is in FMZ 17 but extends into FMZ 16 (e.g., parts of the Trent system) gets tagged FMZ17, full geometry preserved. This is the same semantics as waterbody.
+- [x] MultiLineString handling is preserved (do NOT explode to LineStrings here — segmentation in Part 3 will handle that)
+- [x] Length is computed in EPSG:3161 after simplification
+- [x] Centroid containment for linestrings: PostGIS `ST_Centroid` works for linestrings; the centroid of a long winding stream might be in surprising places, but it's still a defensible filter
+- [x] A reach_full whose centroid is in FMZ 17 but extends into FMZ 16 (e.g., parts of the Trent system) gets tagged FMZ17, full geometry preserved. This is the same semantics as waterbody.
 
 After implementation:
-- [ ] Run the script. Note the elapsed time.
-- [ ] `SELECT fmz_zone, candidate_type, COUNT(*) FROM candidates GROUP BY fmz_zone, candidate_type ORDER BY fmz_zone, candidate_type;` — every cell should be populated, watercourses substantially exceed waterbodies in both regions
-- [ ] QGIS sanity check: watercourses connect to waterbodies, no orphan offshore lines, FMZ tagging visible by color
+- [x] Run the script. Note the elapsed time.
+- [x] `SELECT fmz_zone, candidate_type, COUNT(*) FROM candidates GROUP BY fmz_zone, candidate_type ORDER BY fmz_zone, candidate_type;` — every cell should be populated, watercourses substantially exceed waterbodies in both regions
+- [x] QGIS sanity check: watercourses connect to waterbodies, no orphan offshore lines, FMZ tagging visible by color
 
 ### Re-run the roads ingestion with the buffered combined bbox
 
-- [ ] Update `backend/ingest/roads.py` to use `ROADS_BBOX` (COMBINED_BBOX + 5km buffer)
-- [ ] Drop and re-ingest the roads table
-- [ ] Verify count is meaningfully higher than Phase 1's 47,601 (probably 5-10x given the area increase)
+- [x] Update `backend/ingest/roads.py` to use `ROADS_BBOX` (COMBINED_BBOX + 5km buffer)
+- [x] Drop and re-ingest the roads table
+- [x] Verify count is meaningfully higher than Phase 1's 47,601 (probably 5-10x given the area increase)
 
 ### Re-run the dist_to_road scoring with simplified geometry
 

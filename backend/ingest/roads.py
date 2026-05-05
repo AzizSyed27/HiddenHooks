@@ -1,4 +1,4 @@
-"""Download OSM road network for the test bbox, project to EPSG:3161, store in roads table."""
+"""Download OSM road network for FMZ 16+17 + 5km buffer, project to EPSG:3161, store in roads table."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ import osmnx as ox
 from sqlalchemy import create_engine, text
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from config import CACHE_DIR, DATABASE_URL, ROADS_CACHE_PATH, TEST_BBOX
+from config import CACHE_DIR, DATABASE_URL, ROADS_BBOX, ROADS_CACHE_PATH
 
 NETWORK_TYPE = "drive"
 
@@ -42,7 +42,7 @@ def download_or_load(
 
 def ingest(engine) -> None:
     print("Loading road network...")
-    G = download_or_load(TEST_BBOX, ROADS_CACHE_PATH, NETWORK_TYPE)
+    G = download_or_load(ROADS_BBOX, ROADS_CACHE_PATH, NETWORK_TYPE)
 
     G_proj = ox.project_graph(G, to_crs="EPSG:3161")
     edges = ox.graph_to_gdfs(G_proj, nodes=False, edges=True)

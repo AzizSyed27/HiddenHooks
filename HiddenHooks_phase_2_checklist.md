@@ -375,7 +375,7 @@ ARA points are the empirical anchor for F-scoring. You ingest the survey points 
 ### Ingest ARA points
 
 **Plan Mode prompt**: "Write `backend/ingest/ara_points.py` that:
-1. Reads the ARA Survey Point shapefile from `data/ara/`.
+1. Reads the ARA Survey Point shapefile from `data/ara/Aquatic_Resource_Area_Survey_Point`.
 2. Filters to points whose geometry is inside FMZ 16 *or* FMZ 17. Tag each surviving point with the appropriate fmz_zone.
 3. Reprojects to EPSG:3161.
 4. Captures FISH_SPECIES_SUMMARY (handle 'NaN' string normalization) and survey date.
@@ -384,15 +384,15 @@ ARA points are the empirical anchor for F-scoring. You ingest the survey points 
 Same patterns as the OHN ingestion: GeoPandas, pyogrio bbox at driver level using COMBINED_BBOX, idempotent upsert on ara_id."
 
 Verify in the plan:
-- [ ] FMZ filter handles both regions, tags appropriately
-- [ ] Survey date column name in the source — confirm before assuming
-- [ ] FISH_SPECIES_SUMMARY normalization handles 'NaN' string
+- [x] FMZ filter handles both regions, tags appropriately
+- [x] Survey date column name in the source — confirm before assuming
+- [x] FISH_SPECIES_SUMMARY normalization handles 'NaN' string
 
 After running:
-- [ ] `SELECT fmz_zone, COUNT(*) FROM ara_points GROUP BY fmz_zone;` — both populated. Note the asymmetry; this is your ARA spatial coverage signal.
-- [ ] `SELECT fmz_zone, COUNT(*) FILTER (WHERE fish_species_summary IS NOT NULL) AS populated, COUNT(*) AS total FROM ara_points GROUP BY fmz_zone;` — what fraction is populated in each region? If FMZ 17 has higher coverage, that's expected.
-- [ ] `SELECT fish_species_summary FROM ara_points WHERE fish_species_summary IS NOT NULL LIMIT 20;` — eyeball the format. Comma-separated, no spaces after commas? Are there species names with commas in them?
-- [ ] `SELECT DISTINCT TRIM(unnest(string_to_array(fish_species_summary, ','))) AS species FROM ara_points WHERE fish_species_summary IS NOT NULL ORDER BY species;` — get the full species list across both regions. Compare to your species_values.csv. Anything missing? Anything with weird capitalization or whitespace? Update the CSV if needed.
+- [x] `SELECT fmz_zone, COUNT(*) FROM ara_points GROUP BY fmz_zone;` — both populated. Note the asymmetry; this is your ARA spatial coverage signal.
+- [x] `SELECT fmz_zone, COUNT(*) FILTER (WHERE fish_species_summary IS NOT NULL) AS populated, COUNT(*) AS total FROM ara_points GROUP BY fmz_zone;` — what fraction is populated in each region? If FMZ 17 has higher coverage, that's expected.
+- [x] `SELECT fish_species_summary FROM ara_points WHERE fish_species_summary IS NOT NULL LIMIT 20;` — eyeball the format. Comma-separated, no spaces after commas? Are there species names with commas in them?
+- [x] `SELECT DISTINCT TRIM(unnest(string_to_array(fish_species_summary, ','))) AS species FROM ara_points WHERE fish_species_summary IS NOT NULL ORDER BY species;` — get the full species list across both regions. Compare to your species_values.csv. Anything missing? Anything with weird capitalization or whitespace? Update the CSV if needed.
 
 ### Snap ARA points to candidates
 
@@ -415,22 +415,22 @@ Note: I'm intentionally NOT requiring a.fmz_zone = c.fmz_zone for the snap. An A
 Some ARA points will not snap (no candidate within 50m). Leave them NULL — log the count after running, broken out by fmz_zone."
 
 Verify in the plan:
-- [ ] KNN operator is used for efficiency (not nested loops)
-- [ ] Polygon and reach_segment are eligible targets, reach_full is not
-- [ ] No FMZ-equality constraint on snap (intentional)
-- [ ] Snap tolerance is the 50m we agreed on, exposed as a config parameter
+- [x] KNN operator is used for efficiency (not nested loops)
+- [x] Polygon and reach_segment are eligible targets, reach_full is not
+- [x] No FMZ-equality constraint on snap (intentional)
+- [x] Snap tolerance is the 50m we agreed on, exposed as a config parameter
 
 ### Sanity checks
 
-- [ ] `SELECT fmz_zone, COUNT(*) FILTER (WHERE snapped_candidate_id IS NOT NULL) AS snapped, COUNT(*) AS total FROM ara_points GROUP BY fmz_zone;` — fraction snapped per region tells you ARA spatial coverage
-- [ ] `SELECT fmz_zone, AVG(snap_distance_m), MAX(snap_distance_m) FROM ara_points WHERE snapped_candidate_id IS NOT NULL GROUP BY fmz_zone;` — most snaps should be very small
-- [ ] **Cross-FMZ snaps**: `SELECT COUNT(*) FROM ara_points a JOIN candidates c ON a.snapped_candidate_id = c.id WHERE a.fmz_zone != c.fmz_zone;` — should be small but non-zero (boundary effects)
-- [ ] QGIS visual: load ara_points, color by `snap_distance_m`. Most should be near-zero.
-- [ ] Pick 3 ARA points from each region, look up their snapped candidates in QGIS, confirm spatial association is correct
+- [x] `SELECT fmz_zone, COUNT(*) FILTER (WHERE snapped_candidate_id IS NOT NULL) AS snapped, COUNT(*) AS total FROM ara_points GROUP BY fmz_zone;` — fraction snapped per region tells you ARA spatial coverage
+- [x] `SELECT fmz_zone, AVG(snap_distance_m), MAX(snap_distance_m) FROM ara_points WHERE snapped_candidate_id IS NOT NULL GROUP BY fmz_zone;` — most snaps should be very small
+- [x] **Cross-FMZ snaps**: `SELECT COUNT(*) FROM ara_points a JOIN candidates c ON a.snapped_candidate_id = c.id WHERE a.fmz_zone != c.fmz_zone;` — should be small but non-zero (boundary effects)
+- [x] QGIS visual: load ara_points, color by `snap_distance_m`. Most should be near-zero.
+- [x] Pick 3 ARA points from each region, look up their snapped candidates in QGIS, confirm spatial association is correct
 
 ### Merge to main
 
-- [ ] Merge `phase-2/06-ara-ingest` to `main`
+- [x] Merge `phase-2/06-ara-ingest` to `main`
 
 ---
 

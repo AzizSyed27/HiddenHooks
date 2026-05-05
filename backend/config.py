@@ -7,6 +7,7 @@ REPO_ROOT = Path(__file__).parent.parent
 # Raw data paths
 OHN_WATERBODY_DIR = REPO_ROOT / "phase-0-data/ohn/Ontario_Hydro_Network_(OHN)_-_Waterbody"
 OHN_WATERCOURSE_DIR = REPO_ROOT / "phase-0-data/ohn/Ontario_Hydro_Network_(OHN)_-_Watercourse"
+ARA_DIR = REPO_ROOT / "phase-0-data/ara/Aquatic_Resource_Area_Survey_Point"
 FMZ_DIR = REPO_ROOT / "data/fmz/Fisheries_Management_Zone"
 ONTARIO_BOUNDARY_DIR = REPO_ROOT / "data/ontario_boundary/Province"
 GREAT_LAKES_DIR = REPO_ROOT / "data/great_lakes/ne_10m_lakes"
@@ -41,6 +42,10 @@ SEGMENT_LENGTH_M = 200
 
 # Tunable: snap tolerance for Part 4 connectivity graph (bridges minor OHN topology gaps).
 SNAP_TOLERANCE_M = 5.0
+
+# Tunable: snap tolerance for Part 6 ARA point → candidate snapping.
+# Much larger than connectivity snap (5m) — ARA survey points have GPS imprecision.
+ARA_SNAP_TOLERANCE_M = 50.0
 
 CACHE_DIR = REPO_ROOT / "cache"
 ROADS_CACHE_PATH = CACHE_DIR / "roads_fmz_combined.graphml"

@@ -485,9 +485,9 @@ UPDATE candidates SET h_score = sub.h FROM (
 Then add 0.1 to h_score for unnamed candidates, clip to 1.0. Show SQL before generating."
 
 Verify:
-- [ ] Window function PARTITIONS BY fmz_zone — confirmed in the SQL
-- [ ] Active-candidate filter is applied
-- [ ] After running, `SELECT fmz_zone, MIN(h_score), AVG(h_score), MAX(h_score) FROM candidates GROUP BY fmz_zone;` — both regions should range 0 to ~1.0 with average near 0.5 (it's a percentile rank)
+- [x] Window function PARTITIONS BY fmz_zone — confirmed in the SQL
+- [x] Active-candidate filter is applied
+- [x] After running, `SELECT fmz_zone, MIN(h_score), AVG(h_score), MAX(h_score) FROM candidates GROUP BY fmz_zone;` — both regions should range 0 to ~1.0 with average near 0.5 (it's a percentile rank)
 
 ### A — Accessibility score (global)
 
@@ -507,9 +507,9 @@ Write `backend/ingest/trails_and_parking.py` to ingest these from OSM (OSMnx or 
 Show plan before generating, especially the OSM ingestion approach (cache, idempotent, etc.)."
 
 Verify:
-- [ ] OSM ingestion follows the same caching pattern as Phase 1's roads.py and uses ROADS_BBOX
-- [ ] Threshold is configurable, not magic
-- [ ] Edge case: candidates with no trail OR parking within any reasonable distance get a_score = 0 (not NULL)
+- [x] OSM ingestion follows the same caching pattern as Phase 1's roads.py and uses ROADS_BBOX
+- [x] Threshold is configurable, not magic
+- [x] Edge case: candidates with no trail OR parking within any reasonable distance get a_score = 0 (not NULL)
 
 ### E — Ecology bonus (global)
 

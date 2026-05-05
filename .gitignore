@@ -11,5 +11,6 @@ data/fmz
 data/ontario_boundary/
 data/great_lakes
 data/ara
+data/solris
 # OSMnx download cache
 cache/

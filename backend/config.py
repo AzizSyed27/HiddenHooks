@@ -47,8 +47,13 @@ SNAP_TOLERANCE_M = 5.0
 # Much larger than connectivity snap (5m) — ARA survey points have GPS imprecision.
 ARA_SNAP_TOLERANCE_M = 50.0
 
+# Tunable: distance at which a_score reaches 0.0 (linear decay from 0m to this value).
+ACCESSIBILITY_DECAY_M = 2000.0
+
 CACHE_DIR = REPO_ROOT / "cache"
-ROADS_CACHE_PATH = CACHE_DIR / "roads_fmz_combined.graphml"
+ROADS_CACHE_PATH   = CACHE_DIR / "roads_fmz_combined.graphml"
+TRAILS_CACHE_PATH  = CACHE_DIR / "trails_fmz_combined.pkl"
+PARKING_CACHE_PATH = CACHE_DIR / "parking_fmz_combined.pkl"
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",

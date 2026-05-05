@@ -104,3 +104,7 @@ Pipeline runs end-to-end: ingest → score → API → map view.
 - Future state: portfolio-visible with a "look but don't reuse" license.
 - Trip data (actual GPS coordinates of validated spots) is never
   committed. Trip logs go in a gitignored `private/` folder.
+
+  ## Known issue: 
+  
+  OHN NaN string normalization. The .where() chain in backend/ingest/ohn_waterbody.py and backend/ingest/ohn_watercourse.py is supposed to convert literal "NaN" strings in the name column to NULL but doesn't take effect (root cause not yet diagnosed — the logic looks correct on inspection). After every re-ingestion of waterbody or watercourse data, manually run: UPDATE candidates SET name = NULL WHERE name = 'NaN'; Verify with SELECT COUNT(*) FROM candidates WHERE name = 'NaN'; returning 0 before proceeding to downstream scoring or graph operations.

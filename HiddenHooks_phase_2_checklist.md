@@ -289,10 +289,10 @@ The graph is what lets fish observations at one ARA point inform candidates that
 **Plan Mode prompt**: "Add a `candidate_edges` table for the connectivity graph. Columns: from_candidate_id (FK to candidates), to_candidate_id (FK to candidates), edge_type (text: 'touches' or 'snapped'), distance_m (FLOAT, the gap that was bridged for snapped edges, 0 for touches). Primary key (from_candidate_id, to_candidate_id). Index on each FK column for fast graph traversal. Edges are stored undirected, but I'll insert each pair only once with from < to to avoid double-counting — do this via CHECK constraint or convention. Edges deliberately span the FMZ boundary; do not add an FMZ filter to edge construction. Show me the SQL before generating."
 
 Verify in the plan:
-- [ ] Foreign keys with ON DELETE CASCADE so dropping candidates cleans up edges
-- [ ] Indexes on both FK columns (graph traversal queries on either direction)
-- [ ] Convention or constraint for undirected representation (from_id < to_id)
-- [ ] **No FMZ filter** in the edge build query — confirmed explicit
+- [x] Foreign keys with ON DELETE CASCADE so dropping candidates cleans up edges
+- [x] Indexes on both FK columns (graph traversal queries on either direction)
+- [x] Convention or constraint for undirected representation (from_id < to_id)
+- [x] **No FMZ filter** in the edge build query — confirmed explicit
 
 ### Build the graph
 
@@ -315,16 +315,16 @@ Verify in the plan:
 
 ### Sanity checks
 
-- [ ] `SELECT COUNT(*) FROM candidate_edges;` — should be much larger than candidate count
-- [ ] `SELECT edge_type, COUNT(*) FROM candidate_edges GROUP BY edge_type;` — both types should appear
-- [ ] **Cross-region edges**: `SELECT COUNT(*) FROM candidate_edges e JOIN candidates c1 ON e.from_candidate_id=c1.id JOIN candidates c2 ON e.to_candidate_id=c2.id WHERE c1.fmz_zone != c2.fmz_zone;` — there should be *some* of these (where the FMZ boundary cuts across a connected water network), but not many. If there are zero, your graph isn't bridging the boundary at all and the fish-inference benefit of doing both regions together is wasted. If there are tens of thousands, the FMZ polygons are probably wonky and over-bordering rivers.
-- [ ] Pick a named river in each region and verify its segments are connected end-to-end
-- [ ] Pick a small isolated pond and verify it has zero or few edges (correct: it shouldn't connect to anything)
-- [ ] **Connected components check**: write a one-off SQL or Python script (using networkx) that loads the edge list and computes connected components. The largest few components should cover most of the water network. Many small components = something's wrong.
+- [x] `SELECT COUNT(*) FROM candidate_edges;` — should be much larger than candidate count
+- [x] `SELECT edge_type, COUNT(*) FROM candidate_edges GROUP BY edge_type;` — both types should appear
+- [x] **Cross-region edges**: `SELECT COUNT(*) FROM candidate_edges e JOIN candidates c1 ON e.from_candidate_id=c1.id JOIN candidates c2 ON e.to_candidate_id=c2.id WHERE c1.fmz_zone != c2.fmz_zone;` — there should be *some* of these (where the FMZ boundary cuts across a connected water network), but not many. If there are zero, your graph isn't bridging the boundary at all and the fish-inference benefit of doing both regions together is wasted. If there are tens of thousands, the FMZ polygons are probably wonky and over-bordering rivers.
+- [x] Pick a named river in each region and verify its segments are connected end-to-end
+- [x] Pick a small isolated pond and verify it has zero or few edges (correct: it shouldn't connect to anything)
+- [x] **Connected components check**: write a one-off SQL or Python script (using networkx) that loads the edge list and computes connected components. The largest few components should cover most of the water network. Many small components = something's wrong.
 
 ### Merge to main
 
-- [ ] Merge `phase-2/04-connectivity` to `main`
+- [x] Merge `phase-2/04-connectivity` to `main`
 
 ---
 
@@ -354,13 +354,13 @@ This is the values document that encodes "the aim are the bigger fish." It's a C
 **Plan Mode prompt**: "Create a `species_values` table: species_name TEXT PRIMARY KEY, weight FLOAT NOT NULL, notes TEXT. Write `backend/ingest/species_values.py` to read the CSV and upsert into the table. Idempotent on species_name. Show me the SQL and Python before generating."
 
 After implementation:
-- [ ] Run the script
-- [ ] `SELECT COUNT(*) FROM species_values;` — matches your CSV row count
-- [ ] `SELECT * FROM species_values ORDER BY weight DESC LIMIT 10;` — top of list should be the species you actually want to catch
+- [x] Run the script
+- [x] `SELECT COUNT(*) FROM species_values;` — matches your CSV row count
+- [x] `SELECT * FROM species_values ORDER BY weight DESC LIMIT 10;` — top of list should be the species you actually want to catch
 
 ### Merge to main
 
-- [ ] Merge `phase-2/05-species-table` to `main`
+- [x] Merge `phase-2/05-species-table` to `main`
 
 ---
 

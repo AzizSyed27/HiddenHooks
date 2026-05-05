@@ -39,6 +39,9 @@ ROADS_BBOX = (-83.1859, 41.7160, -77.4188, 45.3463)
 # Tunable: length of each reach_segment child created during Part 3 segmentation.
 SEGMENT_LENGTH_M = 200
 
+# Tunable: snap tolerance for Part 4 connectivity graph (bridges minor OHN topology gaps).
+SNAP_TOLERANCE_M = 5.0
+
 CACHE_DIR = REPO_ROOT / "cache"
 ROADS_CACHE_PATH = CACHE_DIR / "roads_fmz_combined.graphml"
 

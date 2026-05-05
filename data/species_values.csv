@@ -1,0 +1,74 @@
+# HiddenHooks species value table
+# Philosophy: the aim is bigger fish. Weight reflects how much a confirmed population
+# raises the value of a hidden reach or lake — not just how popular the species is,
+# but how hard it is to find, how large it gets, and how much it rewards a long paddle.
+# Muskellunge gets 10 because a hidden muskie lake is the whole point of this tool.
+# Minnow streams get 1 because they tell you nothing worth hiding.
+# Weights are tunable — adjust as fishing goals evolve.
+# NOTE: Species names must exactly match ARA FISH_SPECIES_SUMMARY values (case-sensitive).
+# Verify after Part 6 ingest: SELECT DISTINCT TRIM(unnest(string_to_array(fish_species_summary, ','))) FROM ara_points ORDER BY 1;
+species_name,weight,notes
+Muskellunge,10,Ontario trophy pinnacle. A hidden muskie lake in FMZ 17 is the jackpot this tool is built for. Rare enough that presence is a strong signal.
+Walleye,9,Primary driver of FMZ 17 value. Most sought-after table fish in Ontario. A hidden walleye body of water that doesn't appear on popular fishing maps is exactly what this tool should surface.
+Lake Trout,9,Cold-water indicator species — confirmed presence means deep pristine oligotrophic water. Dominant trophy fish in FMZ 16's deeper lakes. Rare enough to be meaningful.
+Brook Trout,9,Native stream trout. Cold clean usually remote. A confirmed wild brook trout stream is one of the best things this tool can surface — the stream equivalent of a trophy lake.
+Smallmouth Bass,8,Top sport fish across both FMZs. Not rare but a high-smallmouth hidden reach is genuinely worth finding — especially in FMZ 16's Georgian Bay drainages.
+Northern Pike,8,Big pike are legitimate trophy targets. Common but large pike in a hidden bay or backwater are worth the paddle.
+Rainbow Trout,8,Hugely popular widely stocked but also self-sustaining in good river systems. A hidden rainbow river is high-value.
+Chinook Salmon,8,Major Great Lakes tributary run species. Confirmed presence signals a substantial river system with serious sport potential.
+Brown Trout,7,Great sport fish often stocked but can naturalize. One tier below brook trout because it's non-native.
+Largemouth Bass,7,Popular and fun but skews toward warmer shallower more accessible water. One tier below smallmouth as a hiddenness signal.
+Lake Whitefish,7,Excellent eating challenging to catch associated with clean cold lakes. Presence alongside lake trout is a very good signal.
+Sauger,7,Walleye's rare close relative. Historically present in St. Lawrence / Ottawa drainage. High weight because confirmed sauger water is genuinely special.
+Coho Salmon,7,Great Lakes tributary salmon. One tier below Chinook on size and run magnitude.
+Burbot,6,Cold-water native excellent eating (ice fishing target). Indicator of deep clean lakes. Under-targeted and often hidden — a confirmed burbot water is a quiet gem.
+Tiger Muskie,6,Sterile Northern Pike x Muskellunge hybrid stocked in some Ontario waters. Worth noting but one tier below true muskellunge.
+Cisco,6,Lake cisco / lake herring. As a target fish it's modest but confirmed cisco presence strongly implies cold oxygenated deep water — prime lake trout and walleye habitat.
+Yellow Perch,5,Important ice fishing species good eating. Ubiquitous in FMZ 17 — presence alone is a weak hiddenness signal; weight reflects its value as a quarry.
+Black Crappie,5,Genuine sport panfish challenging to find in numbers. Fun when you locate a hidden crappie school.
+Channel Catfish,5,Specifically targeted by a subset of Ontario anglers. Presence in a hidden backwater is notable.
+White Crappie,4,Less common than black crappie in Ontario similar appeal.
+Rock Bass,4,Fun panfish widely distributed. Present almost everywhere so not a strong hiddenness signal on its own.
+Brown Bullhead,4,Niche target; some anglers specifically night-fish for bullheads.
+Black Bullhead,4,Similar to brown bullhead. Less common in Ontario range.
+Yellow Bullhead,4,Least common Ontario bullhead. Same niche target weight.
+Freshwater Drum,4,Under-targeted in Ontario (southeastern distribution). Confirmed drum is interesting to a specific angler.
+Pumpkinseed,3,Common panfish. Low bar for presence.
+Bluegill,3,Rare in Ontario (near southern border). Weight 3 as a panfish curiosity.
+Common Carp,3,Niche — dedicated carp anglers value hidden carp water. Not our primary audience.
+Silver Redhorse,3,Somewhat sought by specialized anglers. Indicator of clean well-oxygenated rivers.
+Shorthead Redhorse,3,Same rationale as silver redhorse.
+Greater Redhorse,3,Species at risk in Ontario — confirmed presence is ecologically notable even if not a top angling target.
+Rainbow Smelt,3,Targeted by dip-netters in spring runs. Fun but not a serious fishing signal.
+White Sucker,2,Rough fish. Ubiquitous — presence tells you almost nothing about water quality or hiddenness.
+Longnose Sucker,2,Same rationale as white sucker.
+Quillback,2,Carpsucker — rough fish low signal value.
+Fallfish,2,Largest Ontario minnow sometimes mistaken for a gamefish. Niche interest at best.
+Creek Chub,2,Common minnow indicator of small creek habitat. Presence confirms it's a stream not much else.
+Blacknose Dace,2,Cold-water minnow often co-occurs with brook trout — the brook trout signal matters more.
+Longnose Dace,2,Fast-water riffle species. Habitat indicator but not a target.
+Common Shiner,1,Forage minnow.
+Bluntnose Minnow,1,Forage minnow.
+Fathead Minnow,1,Baitfish.
+Golden Shiner,1,Baitfish.
+Spotfin Shiner,1,Forage minnow.
+Emerald Shiner,1,Open-water forage.
+Mimic Shiner,1,Forage minnow.
+Sand Shiner,1,Forage minnow.
+Spottail Shiner,1,Forage minnow.
+Hornyhead Chub,1,Minnow. They build nests used by other species — ecologically interesting but not a target.
+Silverjaw Minnow,1,Forage minnow.
+Brassy Minnow,1,Forage minnow.
+Redside Dace,1,Species at risk ecologically notable but not a fishing target.
+Central Stoneroller,1,Algae-scraper minnow. Confirms it's a stream. Nothing more.
+Mottled Sculpin,1,Cold-water indicator benthic — interesting ecologically not a target.
+Slimy Sculpin,1,Same as mottled sculpin.
+Logperch,1,Darter. Benthic invertivore not a target.
+Iowa Darter,1,Small darter. Not a target.
+Johnny Darter,1,Small darter. Not a target.
+Fantail Darter,1,Small darter. Not a target.
+River Darter,1,Small darter. Not a target.
+Trout-perch,1,Small cold-water species forage for trout.
+Banded Killifish,1,Forage fish.
+Brook Stickleback,1,Tiny cold-water fish.
+Ninespine Stickleback,1,Tiny forage.

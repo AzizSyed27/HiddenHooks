@@ -523,9 +523,9 @@ Buffer + intersection on hundreds of thousands of candidates × landcover polygo
 Make a recommendation and show the plan."
 
 Verify:
-- [ ] SOLRIS class codes are explicitly identified (don't assume)
-- [ ] Performance approach is justified — at this scale, raster-based is probably necessary
-- [ ] Default for skipped candidates is documented (don't leave NULL — set a sensible default like 0.3)
+- [x] SOLRIS class codes are explicitly identified (don't assume)
+- [x] Performance approach is justified — at this scale, raster-based is probably necessary
+- [x] Default for skipped candidates is documented (don't leave NULL — set a sensible default like 0.3)
 
 ### F — Fish potential (global, leverages the cross-region graph)
 

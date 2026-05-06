@@ -7,7 +7,8 @@ REPO_ROOT = Path(__file__).parent.parent
 # Raw data paths
 OHN_WATERBODY_DIR = REPO_ROOT / "phase-0-data/ohn/Ontario_Hydro_Network_(OHN)_-_Waterbody"
 OHN_WATERCOURSE_DIR = REPO_ROOT / "phase-0-data/ohn/Ontario_Hydro_Network_(OHN)_-_Watercourse"
-ARA_DIR = REPO_ROOT / "phase-0-data/ara/Aquatic_Resource_Area_Survey_Point"
+ARA_DIR     = REPO_ROOT / "phase-0-data/ara/Aquatic_Resource_Area_Survey_Point"
+SOLRIS_DIR  = REPO_ROOT / "data/solris"
 FMZ_DIR = REPO_ROOT / "data/fmz/Fisheries_Management_Zone"
 ONTARIO_BOUNDARY_DIR = REPO_ROOT / "data/ontario_boundary/Province"
 GREAT_LAKES_DIR = REPO_ROOT / "data/great_lakes/ne_10m_lakes"
@@ -54,6 +55,13 @@ CACHE_DIR = REPO_ROOT / "cache"
 ROADS_CACHE_PATH   = CACHE_DIR / "roads_fmz_combined.graphml"
 TRAILS_CACHE_PATH  = CACHE_DIR / "trails_fmz_combined.pkl"
 PARKING_CACHE_PATH = CACHE_DIR / "parking_fmz_combined.pkl"
+SOLRIS_CACHE_PATH  = CACHE_DIR / "solris_combined.tif"
+
+# SOLRIS 3.0 class codes — VERIFY against the official legend before running score_ecology.py.
+# Run `python -m ingest.landcover` first: it prints the full class inventory so you can
+# cross-reference with the legend and correct these lists if needed.
+FOREST_CODES  = [90, 91, 92, 93]           # Forest, Coniferous, Mixed, Deciduous (SOLRIS 3.0)
+WETLAND_CODES = [131, 135, 140, 150, 160]  # Treed Swamp, Thicket Swamp, Fen, Bog, Marsh (SOLRIS 3.0)
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",

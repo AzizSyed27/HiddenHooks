@@ -139,3 +139,6 @@ private/                trip logs — not committed, gitignored
 - Trip data (actual GPS coordinates of validated spots) is never committed.
   Personal logs go in `private/` which is gitignored.
 - The repo is private during development.
+- OHN has a trails dataset that can be later subsituted for the Osmx data set used currently.
+- Research more fish survey datasets like ARA in ontario for better resuts.
+- Will put results to the test by going there in person.

@@ -592,11 +592,11 @@ Surface sub-scores, FMZ identity, confidence tiers, and weight controls in the U
 Update the Pydantic models accordingly. Show the diff before generating."
 
 Verify:
-- [ ] Weight validation is forgiving (normalize rather than 400-error on small float drift)
-- [ ] Active-candidates filter is applied
-- [ ] Rank window function partitions by fmz_zone
-- [ ] f_species is passed through as text (frontend will format)
-- [ ] Response payload size — at two-FMZ scale this might be 100k+ features and 100MB+. Default behavior should probably be to require an fmz parameter, OR cap responses at top N by composite. Plan should flag this and propose a strategy.
+- [x] Weight validation is forgiving (normalize rather than 400-error on small float drift)
+- [x] Active-candidates filter is applied
+- [x] Rank window function partitions by fmz_zone
+- [x] f_species is passed through as text (frontend will format)
+- [x] Response payload size — at two-FMZ scale this might be 100k+ features and 100MB+. Default behavior should probably be to require an fmz parameter, OR cap responses at top N by composite. Plan should flag this and propose a strategy.
 
 ### Update the frontend panel
 

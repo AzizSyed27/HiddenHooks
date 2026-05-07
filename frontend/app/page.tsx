@@ -1,15 +1,24 @@
 "use client"
 
-import { useState, useEffect, useMemo, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { AnimatePresence } from "framer-motion"
 import { ChevronRight } from "lucide-react"
 import type { MapRef } from "react-map-gl/mapbox"
 import MapView from "@/components/map/MapView"
 import CandidatePanel from "@/components/panel/CandidatePanel"
-import type { CandidateCollection } from "@/lib/types"
-import type { FeatureCollection } from "geojson"
+import type { CandidateCollection, Weights } from "@/lib/types"
 
 type Bbox = [number, number, number, number]
+
+// Hardcoded for v1 — should be fetched dynamically from GET /regions (once that endpoint
+// exposes bboxes) in a future iteration.
+const FMZ_BBOXES: Record<string, Bbox> = {
+  FMZ16:    [-83.1173, 41.9094, -78.9081, 45.2666],
+  FMZ17:    [-79.2382, 43.7945, -77.5475, 44.7833],
+  COMBINED: [-83.1173, 41.9094, -77.5475, 45.2666],
+}
+
+const DEFAULT_WEIGHTS: Weights = { w_h: 0.25, w_a: 0.25, w_f: 0.25, w_e: 0.25 }
 
 function getBbox(geometry: { coordinates: unknown }): Bbox {
   let w = Infinity, s = Infinity, e = -Infinity, n = -Infinity
@@ -32,20 +41,33 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"
 
 export default function Home() {
   const mapRef = useRef<MapRef>(null)
-  const [rawCandidates, setRawCandidates] = useState<FeatureCollection | null>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [candidates, setCandidates] = useState<CandidateCollection | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [panelOpen, setPanelOpen] = useState(true)
   const [mapReady, setMapReady] = useState(false)
+  const [fmz, setFmz] = useState<"FMZ16" | "FMZ17" | null>(null)
+  const [weights, setWeights] = useState<Weights>(DEFAULT_WEIGHTS)
 
-  const fetchCandidates = useCallback(async () => {
+  const fetchCandidates = useCallback(async (
+    currentFmz: "FMZ16" | "FMZ17" | null,
+    currentWeights: Weights,
+  ) => {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`${API_URL}/candidates`)
+      const qs = new URLSearchParams({
+        w_h: currentWeights.w_h.toString(),
+        w_a: currentWeights.w_a.toString(),
+        w_f: currentWeights.w_f.toString(),
+        w_e: currentWeights.w_e.toString(),
+      })
+      if (currentFmz) qs.set("fmz", currentFmz)
+      const res = await fetch(`${API_URL}/candidates?${qs}`)
       if (!res.ok) throw new Error(`API error ${res.status}`)
-      setRawCandidates((await res.json()) as FeatureCollection)
+      setCandidates((await res.json()) as CandidateCollection)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load candidates")
     } finally {
@@ -54,27 +76,8 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    fetchCandidates()
+    fetchCandidates(null, DEFAULT_WEIGHTS)
   }, [fetchCandidates])
-
-  // Add normalizedRank to each feature; memoized so the GeoJSON reference is
-  // stable and react-map-gl won't re-upload unchanged data to the GPU.
-  const candidates = useMemo<CandidateCollection | null>(() => {
-    if (!rawCandidates) return null
-    const n = rawCandidates.features.length
-    return {
-      ...rawCandidates,
-      features: rawCandidates.features.map((f) => ({
-        ...f,
-        properties: {
-          ...(f.properties as object),
-          normalizedRank:
-            (((f.properties as { rank: number }).rank ?? 1) - 1) /
-            Math.max(n - 1, 1),
-        },
-      })),
-    } as CandidateCollection
-  }, [rawCandidates])
 
   // Fit the viewport to the full candidate set once both map and data are ready.
   useEffect(() => {
@@ -106,6 +109,25 @@ export default function Home() {
     [candidates],
   )
 
+  const handleFmzChange = useCallback(
+    (newFmz: "FMZ16" | "FMZ17" | null) => {
+      setFmz(newFmz)
+      fetchCandidates(newFmz, weights)
+      const bbox = newFmz ? FMZ_BBOXES[newFmz] : FMZ_BBOXES.COMBINED
+      mapRef.current?.fitBounds(bbox, { padding: 40, duration: 1200 })
+    },
+    [fetchCandidates, weights],
+  )
+
+  const handleWeightsChange = useCallback(
+    (newWeights: Weights) => {
+      setWeights(newWeights)
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      debounceRef.current = setTimeout(() => fetchCandidates(fmz, newWeights), 300)
+    },
+    [fetchCandidates, fmz],
+  )
+
   return (
     <div className="relative h-screen w-screen overflow-hidden">
       {loading && (
@@ -118,7 +140,7 @@ export default function Home() {
           <div className="rounded-lg bg-popover p-6 shadow-xl">
             <p className="text-sm text-destructive">{error}</p>
             <button
-              onClick={fetchCandidates}
+              onClick={() => fetchCandidates(fmz, weights)}
               className="mt-3 text-sm underline hover:no-underline"
             >
               Retry
@@ -142,6 +164,10 @@ export default function Home() {
             selectedId={selectedId}
             onSelect={handleSelect}
             onClose={() => setPanelOpen(false)}
+            fmz={fmz}
+            onFmzChange={handleFmzChange}
+            weights={weights}
+            onWeightsChange={handleWeightsChange}
           />
         )}
       </AnimatePresence>

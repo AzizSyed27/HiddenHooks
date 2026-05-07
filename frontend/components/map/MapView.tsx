@@ -7,7 +7,7 @@ import type { ExpressionSpecification, FilterSpecification } from "mapbox-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
 import type { CandidateCollection } from "@/lib/types"
 
-const EMPTY_FC: CandidateCollection = { type: "FeatureCollection", features: [] }
+const EMPTY_FC: CandidateCollection = { type: "FeatureCollection", features: [], total_count: 0 }
 
 const POLY_FILTER: FilterSpecification = [
   "in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]],
@@ -16,11 +16,12 @@ const LINE_FILTER: FilterSpecification = [
   "in", ["geometry-type"], ["literal", ["LineString", "MultiLineString"]],
 ]
 
+// composite is 0 (low, weak signal) → 1 (high, strong signal); amber = best spots
 const RANK_COLOR: ExpressionSpecification = [
-  "interpolate", ["linear"], ["get", "normalizedRank"],
-  0,   "#f59e0b",
-  0.4, "#06b6d4",
-  1,   "#334155",
+  "interpolate", ["linear"], ["get", "composite"],
+  0,   "#334155",
+  0.5, "#06b6d4",
+  1,   "#f59e0b",
 ]
 
 interface MapViewProps {

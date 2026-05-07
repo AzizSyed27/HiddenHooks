@@ -5,16 +5,22 @@ import { ChevronLeft } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { SheetHeader } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
-import type { CandidateCollection, CandidateFeature, CandidateProperties } from "@/lib/types"
+import type {
+  CandidateCollection,
+  CandidateFeature,
+  CandidateProperties,
+  Weights,
+} from "@/lib/types"
+import CandidateDetail, { ConfidenceDot } from "./CandidateDetail"
 
-// Matches the amber→cyan→slate color ramp used in MapView layers.
-function rankColorHex(normalizedRank: number): string {
-  if (normalizedRank <= 0.4) {
-    const t = normalizedRank / 0.4
-    return `rgb(${Math.round(245 + (6 - 245) * t)},${Math.round(158 + (182 - 158) * t)},${Math.round(11 + (212 - 11) * t)})`
+// Mirrors the MapView RANK_COLOR expression: 0 (low composite) = slate → 1 (high) = amber
+function compositeColor(composite: number): string {
+  if (composite <= 0.5) {
+    const t = composite / 0.5
+    return `rgb(${Math.round(51 + (6 - 51) * t)},${Math.round(65 + (182 - 65) * t)},${Math.round(85 + (212 - 85) * t)})`
   }
-  const t = (normalizedRank - 0.4) / 0.6
-  return `rgb(${Math.round(6 + (51 - 6) * t)},${Math.round(182 + (65 - 182) * t)},${Math.round(212 + (85 - 212) * t)})`
+  const t = (composite - 0.5) / 0.5
+  return `rgb(${Math.round(6 + (245 - 6) * t)},${Math.round(182 + (158 - 182) * t)},${Math.round(212 + (11 - 212) * t)})`
 }
 
 function displayName(props: CandidateProperties): string {
@@ -22,11 +28,23 @@ function displayName(props: CandidateProperties): string {
   return props.candidate_type === "polygon" ? "Unnamed pond" : "Unnamed stream reach"
 }
 
+const WEIGHT_KEYS = ["w_h", "w_a", "w_f", "w_e"] as const
+const WEIGHT_LABELS: Record<(typeof WEIGHT_KEYS)[number], string> = {
+  w_h: "H",
+  w_a: "A",
+  w_f: "F",
+  w_e: "E",
+}
+
 interface CandidatePanelProps {
   candidates: CandidateCollection | null
   selectedId: number | null
   onSelect: (id: number | null) => void
   onClose: () => void
+  fmz: "FMZ16" | "FMZ17" | null
+  onFmzChange: (fmz: "FMZ16" | "FMZ17" | null) => void
+  weights: Weights
+  onWeightsChange: (weights: Weights) => void
 }
 
 export default function CandidatePanel({
@@ -34,8 +52,11 @@ export default function CandidatePanel({
   selectedId,
   onSelect,
   onClose,
+  fmz,
+  onFmzChange,
+  weights,
+  onWeightsChange,
 }: CandidatePanelProps) {
-  const total = candidates?.features.length ?? 0
   const selectedFeature: CandidateFeature | null =
     selectedId != null
       ? (candidates?.features.find((f) => f.properties.id === selectedId) ?? null)
@@ -43,13 +64,13 @@ export default function CandidatePanel({
 
   return (
     <motion.div
-      initial={{ x: -320 }}
+      initial={{ x: -360 }}
       animate={{ x: 0 }}
-      exit={{ x: -320 }}
+      exit={{ x: -360 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="fixed left-0 top-0 z-10 flex h-full w-[320px] flex-col border-r bg-popover shadow-xl"
+      className="fixed left-0 top-0 z-10 flex h-full w-[360px] flex-col border-r bg-popover shadow-xl"
     >
-      {/* Header — SheetHeader provides the flex-col + padding base */}
+      {/* Header */}
       <SheetHeader className="flex flex-row items-center justify-between border-b px-4 py-3">
         <h2 className="font-sans text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           HiddenHooks
@@ -63,7 +84,56 @@ export default function CandidatePanel({
         </button>
       </SheetHeader>
 
-      {/* Detail card — slides in/out when a candidate is selected */}
+      {/* Region selector */}
+      <div className="flex gap-1.5 border-b px-4 py-2.5">
+        {(["both", "FMZ16", "FMZ17"] as const).map((v) => {
+          const active = v === "both" ? fmz === null : fmz === v
+          return (
+            <button
+              key={v}
+              onClick={() => {
+                if (v === "both") onFmzChange(null)
+                else onFmzChange(v)
+              }}
+              className={cn(
+                "rounded-full px-3 py-1 font-sans text-xs font-medium transition-colors",
+                active
+                  ? "bg-foreground text-background"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80",
+              )}
+            >
+              {v === "both" ? "Both" : v === "FMZ16" ? "FMZ 16" : "FMZ 17"}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Weight sliders */}
+      <div className="space-y-2 border-b px-4 py-3">
+        {WEIGHT_KEYS.map((key) => (
+          <div key={key} className="flex items-center gap-2">
+            <span className="w-3 shrink-0 text-right font-sans text-[10px] font-semibold uppercase text-muted-foreground">
+              {WEIGHT_LABELS[key]}
+            </span>
+            <input
+              type="range"
+              min={0.01}
+              max={1}
+              step={0.01}
+              value={weights[key]}
+              onChange={(e) =>
+                onWeightsChange({ ...weights, [key]: parseFloat(e.target.value) })
+              }
+              className="h-1 flex-1 cursor-pointer accent-amber-400"
+            />
+            <span className="w-8 text-right font-sans text-[10px] tabular-nums text-muted-foreground">
+              {weights[key].toFixed(2)}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* Detail card */}
       <AnimatePresence>
         {selectedFeature && (
           <motion.div
@@ -72,44 +142,8 @@ export default function CandidatePanel({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15 }}
-            className="border-b bg-muted/30 px-4 pb-4 pt-3"
           >
-            <p className="font-serif text-base font-medium leading-snug">
-              {displayName(selectedFeature.properties)}
-            </p>
-            <p className="mt-0.5 font-sans text-xs text-muted-foreground">
-              Rank #{selectedFeature.properties.rank} of {total}
-              {" · "}
-              {selectedFeature.properties.dist_to_road_meters != null
-                ? `${selectedFeature.properties.dist_to_road_meters.toFixed(0)} m from road`
-                : "—"}
-            </p>
-            {selectedFeature.properties.candidate_type === "polygon" &&
-              selectedFeature.properties.area_m2 != null && (
-                <p className="font-sans text-xs text-muted-foreground">
-                  {(selectedFeature.properties.area_m2 / 10000).toFixed(2)} ha
-                </p>
-              )}
-            {selectedFeature.properties.candidate_type === "reach_full" &&
-              selectedFeature.properties.length_m != null && (
-                <p className="font-sans text-xs text-muted-foreground">
-                  {(selectedFeature.properties.length_m / 1000).toFixed(2)} km
-                </p>
-              )}
-            {/* Hiddenness bar — single signal for Phase 1 */}
-            <div className="mt-3">
-              <p className="mb-1 font-sans text-[10px] uppercase tracking-wide text-muted-foreground">
-                Hiddenness
-              </p>
-              <div className="h-1.5 rounded-full bg-muted">
-                <div
-                  style={{
-                    width: `${(1 - selectedFeature.properties.normalizedRank) * 100}%`,
-                  }}
-                  className="h-full rounded-full bg-amber-400 transition-all duration-300"
-                />
-              </div>
-            </div>
+            <CandidateDetail feature={selectedFeature} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -124,21 +158,30 @@ export default function CandidatePanel({
               key={p.id}
               onClick={() => onSelect(p.id)}
               className={cn(
-                "flex w-full items-center gap-3 border-b border-border/40 px-4 py-2.5 text-left",
+                "flex w-full items-center gap-2 border-b border-border/40 px-4 py-2.5 text-left",
                 "hover:bg-muted/50",
                 isSelected && "bg-muted",
               )}
             >
+              {/* Rank badge — color mirrors map layer */}
               <Badge
-                style={{ background: rankColorHex(p.normalizedRank), color: "#fff" }}
+                style={{ background: compositeColor(p.composite), color: "#fff" }}
                 className="shrink-0 justify-center border-0 font-sans text-[10px] font-semibold"
               >
                 {p.rank}
               </Badge>
-              <div className="min-w-0">
-                <p className="truncate font-serif text-sm leading-tight">
-                  {displayName(p)}
-                </p>
+              {/* FMZ badge */}
+              <span className="shrink-0 rounded bg-muted px-1 font-mono text-[9px] text-muted-foreground">
+                {p.fmz_zone.replace("FMZ", "")}
+              </span>
+              {/* Name + distance + confidence dot */}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <p className="truncate font-serif text-sm leading-tight">
+                    {displayName(p)}
+                  </p>
+                  <ConfidenceDot confidence={p.f_confidence} />
+                </div>
                 <p className="font-sans text-xs text-muted-foreground">
                   {p.dist_to_road_meters != null
                     ? `${p.dist_to_road_meters.toFixed(0)} m`

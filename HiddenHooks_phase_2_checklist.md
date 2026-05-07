@@ -546,12 +546,12 @@ For each active candidate:
 Implementation: graph traversal in Python (networkx loaded from candidate_edges, all rows, not filtered by region) is simpler than recursive CTEs in SQL for this. Show the algorithm + the data loading approach before generating."
 
 Verify:
-- [ ] Graph traversal does not filter by fmz_zone (cross-region inference works)
-- [ ] Graph distance is computed correctly (BFS, not weighted)
-- [ ] Discount factor 0.7^d is configurable (F_GRAPH_DISCOUNT in config)
-- [ ] Species name matching is case-insensitive and trimmed
-- [ ] Species not in species_values table get weight 0 (not NULL)
-- [ ] Performance: pre-load species_values into a dict, pre-load ARA snaps into a dict keyed by candidate_id
+- [x] Graph traversal does not filter by fmz_zone (cross-region inference works)
+- [x] Graph distance is computed correctly (BFS, not weighted)
+- [x] Discount factor 0.7^d is configurable (F_GRAPH_DISCOUNT in config)
+- [x] Species name matching is case-insensitive and trimmed
+- [x] Species not in species_values table get weight 0 (not NULL)
+- [x] Performance: pre-load species_values into a dict, pre-load ARA snaps into a dict keyed by candidate_id
 
 ### Sanity checks across all four components
 

@@ -555,17 +555,17 @@ Verify:
 
 ### Sanity checks across all four components
 
-- [ ] `SELECT fmz_zone, candidate_type, AVG(h_score), AVG(a_score), AVG(f_score), AVG(e_score) FROM candidates GROUP BY fmz_zone, candidate_type;` — averages should be in the 0.2-0.6 range, not all 0 or all 1. H average should be ~0.5 in both regions (it's a percentile). The other three may differ between regions, which is informative.
-- [ ] `SELECT fmz_zone, f_confidence, COUNT(*) FROM candidates GROUP BY fmz_zone, f_confidence ORDER BY fmz_zone, f_confidence;` — distribution per region. Expect FMZ 17 to have a higher fraction of 'strong' and 'plausible'; FMZ 16 to have more 'speculative'. If they're identical, something's wrong with how the graph is propagating.
-- [ ] **Cross-region inference check**: pick a candidate in FMZ 16 with f_confidence='plausible' and look up `f_inferred_from_ara_id`. Find that ARA point. Is it in FMZ 17? If yes, the cross-region inference is working as designed. Find a few of these — they're the strongest evidence that "doing both regions together" was the right call.
-- [ ] Pick the highest h_score candidate in each FMZ separately. Look at each in QGIS. Do they make sense within their respective regions?
-- [ ] Pick a candidate with strong f_confidence and look at f_species. Do the species match the species_values weights?
+- [x] `SELECT fmz_zone, candidate_type, AVG(h_score), AVG(a_score), AVG(f_score), AVG(e_score) FROM candidates GROUP BY fmz_zone, candidate_type;` — averages should be in the 0.2-0.6 range, not all 0 or all 1. H average should be ~0.5 in both regions (it's a percentile). The other three may differ between regions, which is informative.
+- [x] `SELECT fmz_zone, f_confidence, COUNT(*) FROM candidates GROUP BY fmz_zone, f_confidence ORDER BY fmz_zone, f_confidence;` — distribution per region. Expect FMZ 17 to have a higher fraction of 'strong' and 'plausible'; FMZ 16 to have more 'speculative'. If they're identical, something's wrong with how the graph is propagating.
+- [x] **Cross-region inference check**: pick a candidate in FMZ 16 with f_confidence='plausible' and look up `f_inferred_from_ara_id`. Find that ARA point. Is it in FMZ 17? If yes, the cross-region inference is working as designed. Find a few of these — they're the strongest evidence that "doing both regions together" was the right call.
+- [x] Pick the highest h_score candidate in each FMZ separately. Look at each in QGIS. Do they make sense within their respective regions?
+- [x] Pick a candidate with strong f_confidence and look at f_species. Do the species match the species_values weights?
 
 ### Merge to main
 
-- [ ] Branch sanity check: all four scores populated in both regions, no NULL contamination, distributions look right
-- [ ] Merge `phase-2/07-scoring` to `main`
-- [ ] **Run the integration smoke test from Part 9 NOW as a midpoint check, before frontend work starts**
+- [x] Branch sanity check: all four scores populated in both regions, no NULL contamination, distributions look right
+- [x] Merge `phase-2/07-scoring` to `main`
+- [x] **Run the integration smoke test from Part 9 NOW as a midpoint check, before frontend work starts**
 
 ---
 

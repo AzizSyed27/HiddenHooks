@@ -1,4 +1,4 @@
-"""Compute dist_to_road_meters for all polygon and reach_full candidates.
+"""Compute dist_to_road_meters for all active candidates.
 
 Idempotent by design: reruns overwrite existing values with a full recompute.
 """
@@ -22,7 +22,7 @@ UPDATE_SQL = text("""
         ORDER BY r.geom <-> c.geom
         LIMIT 1
     )
-    WHERE c.candidate_type IN ('polygon', 'reach_full')
+    WHERE c.is_active = TRUE
 """)
 
 STATS_SQL = text("""
@@ -36,7 +36,7 @@ STATS_SQL = text("""
             )::numeric, 1
         )                                                                AS median_m
     FROM candidates
-    WHERE candidate_type IN ('polygon', 'reach_full')
+    WHERE is_active = TRUE
       AND dist_to_road_meters IS NOT NULL
 """)
 

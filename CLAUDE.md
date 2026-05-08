@@ -5,7 +5,7 @@ Combines hydrology data, fish survey data, terrain, and accessibility
 into a scored ranking. Personal/portfolio project.
 
 ## Tech stack
-- Python 3.11 backend (FastAPI, GeoPandas, OSMnx 2.x, PostGIS via SQLAlchemy + psycopg2)
+- Python 3.11 backend (FastAPI, GeoPandas, OSMnx 2.x, NetworkX, PostGIS via SQLAlchemy + psycopg2)
 - PostgreSQL 16 + PostGIS 3.4 in Docker (port 5432); conda env: `hiddenhooks`
 - Next.js 16 (App Router), React 19, TypeScript
 - react-map-gl 8 — import from `react-map-gl/mapbox` (dual-export; bare `react-map-gl` doesn't work)
@@ -20,28 +20,43 @@ into a scored ranking. Personal/portfolio project.
 - FastAPI: 8000 (`python -m uvicorn api.main:app --port 8000` from `backend/`)
 - Next.js: 3000 (`npm run dev` from `frontend/`)
 
-## Current phase: Phase 1 — complete
-Test region: ~20 km radius around Rouge National Urban Park (Scarborough, ON).
-Scoring signal: distance to nearest road (`dist_to_road_meters`).
-Pipeline runs end-to-end: ingest → score → API → map view.
+## Current phase: Phase 2 — in progress
+Region: FMZ 16 and FMZ 17 (full Ontario management zones; replaces the Phase 1 test
+region of ~20 km around Rouge National Urban Park, Scarborough, ON).
+Four scoring components: H (hiddenness), A (accessibility), F (fish potential), E (ecology).
+Composite and per-FMZ rank are computed at query time by the API.
 
-## Key files built in Phase 1
+## Key files
+
+### Phase 1
 | File | Purpose |
 |---|---|
 | `backend/config.py` | All paths, `DATABASE_URL`, `TEST_BBOX`, `ROADS_CACHE_PATH` |
 | `backend/ingest/ohn_waterbody.py` | OHN waterbody → `candidates` (type: polygon) |
 | `backend/ingest/ohn_watercourse.py` | OHN watercourse → `candidates` (type: reach_full) |
 | `backend/ingest/roads.py` | OSM road network → `roads`; GraphML cache in `cache/` |
-| `backend/scoring/dist_to_road.py` | PostGIS KNN UPDATE on `dist_to_road_meters` |
-| `backend/api/main.py` | `GET /candidates` → GeoJSON FeatureCollection |
-| `frontend/lib/types.ts` | Shared TS types: `CandidateProperties`, `CandidateFeature`, `CandidateCollection` |
-| `frontend/app/page.tsx` | Map view orchestrator: state, fetch, `mapRef`, `handleSelect`, overlays |
-| `frontend/components/map/MapView.tsx` | react-map-gl map + 4 layers (poly-fill, poly-outline, reach-lines, highlight) |
-| `frontend/components/panel/CandidatePanel.tsx` | Framer Motion slide panel, ranked list, detail card |
+| `backend/scoring/dist_to_road.py` | PostGIS KNN UPDATE on `dist_to_road_meters` for all `is_active = TRUE` candidates |
+
+### Phase 2 — added
+| File | Purpose |
+|---|---|
+| `backend/scoring/snap_ara_to_candidates.py` | Snaps ARA survey points to nearest candidate geometry; populates join table |
+| `backend/scoring/build_connectivity.py` | Builds NetworkX reach graph spanning both FMZs; writes `candidate_edges` |
+| `backend/scoring/score_hiddenness.py` | Normalises `dist_to_road_meters` → `h_score` (0–1, higher = more hidden) |
+| `backend/scoring/score_accessibility.py` | Trail + parking proximity → `a_score` |
+| `backend/scoring/score_fish_potential.py` | ARA BFS propagation → `f_score`, `f_confidence`, `f_species` |
+| `backend/scoring/score_ecology.py` | Habitat/connectivity bonus → `e_score` |
+| `backend/api/main.py` | `GET /health`, `GET /regions`, `GET /candidates` (weights, fmz, radius filter) |
+| `frontend/lib/types.ts` | Shared TS types including `Weights`, `NearLocation`, `RadiusKm` |
+| `frontend/app/page.tsx` | Orchestrator: state (fmz, weights, nearLocation, radiusKm), all handlers |
+| `frontend/components/map/MapView.tsx` | Map layers; composite drives color via interpolate expression |
+| `frontend/components/panel/CandidatePanel.tsx` | Panel with region selector, weight sliders, LocationFilter, detail card, ranked list |
+| `frontend/components/panel/CandidateDetail.tsx` | Score bars (H/A/F/E + composite), confidence badge, raw inputs |
+| `frontend/components/panel/LocationFilter.tsx` | Three-state location filter: off / setter (geo+manual+Nominatim) / active |
 
 ## Established conventions and gotchas
 
-**Database / ingest**
+### Database / ingest
 - Geometry stored in EPSG:3161 (Ontario MNR Lambert, metric). Served to frontend as
   WGS84 via `ST_Transform(geom, 4326)` in the candidates SQL query.
 - Candidates table uses `geometry(Geometry, 3161)` — generic type accepting both
@@ -49,25 +64,77 @@ Pipeline runs end-to-end: ingest → score → API → map view.
 - Ingest is UPSERT via partial unique indexes, NOT delete+insert. `parent_candidate_id`
   references `candidates.id` — DELETE+INSERT would either cascade-nuke Phase 2
   `reach_segment` rows or fail with FK violations.
-- `candidates.dist_to_road_meters` is populated by the scoring script, not ingest.
-  The scoring script takes ~8 min on the test region (PostGIS KNN on 2,888 candidates).
+- Three `candidate_type` values: `polygon` (lakes/ponds), `reach_full` (original
+  watercourse features), `reach_segment` (segmented reaches from Phase 2). Parents
+  (`reach_full`) that were segmented have `is_active = FALSE`; their segments are
+  `is_active = TRUE`.
+- **`is_active = TRUE` is the canonical "active candidates" filter** in all SQL — never
+  filter on `candidate_type IN (...)`. This is what populates the map and drives scoring.
 
-**API**
-- `GET /candidates` returns all features; `rank` is a 1-indexed integer (1 = farthest
-  from road = most hidden). `normalizedRank` is NOT in the API response — it is
-  computed client-side in `page.tsx` after fetch.
+### Scoring architecture
+- **Per-region normalization**: scores are normalised within each FMZ independently.
+  `RANK() OVER (PARTITION BY fmz_zone ORDER BY composite DESC)` — rank 1 is the
+  top composite within that FMZ, not globally. When radius filter is active,
+  `fmz_total` reflects candidates within the radius, not the full FMZ count.
+- **Cross-region graph**: `build_connectivity.py` builds a single NetworkX graph
+  spanning both FMZ 16 and FMZ 17. Reach connectivity is not scoped per-region —
+  a reach in FMZ 17 can be connected to one in FMZ 16 if the underlying watercourse
+  crosses the boundary. BFS for fish potential propagation runs on this unified graph.
+- **Isolated node crash (score_fish_potential.py)**: `G.add_edges_from()` only adds
+  nodes that appear in at least one edge. ARA-anchored candidates with no rows in
+  `candidate_edges` would crash on `G.neighbors()`. Fix: `G.add_nodes_from(ara_map.keys())`
+  before BFS so every ARA anchor is present regardless of connectivity.
+- `dist_to_road_meters` is populated by `scoring/dist_to_road.py`, not ingest. Runs
+  on all `is_active = TRUE` candidates (~8 min for a full FMZ run on PostGIS KNN).
 
-**Frontend**
+### API
+- `GET /candidates` accepts weights `w_h`, `w_a`, `w_f`, `w_e` (floats, default 0.25
+  each). Server normalises them to sum=1. Weight sum ≤ 0 returns 422.
+- Composite is computed at query time via a CTE:
+  `COALESCE(:w_h * h_score, 0) + COALESCE(:w_a * a_score, 0) + ...`
+  COALESCE treats NULL component scores as 0 — safe when pipeline is partially run.
+- `rank` is computed by `RANK() OVER (PARTITION BY fmz_zone ORDER BY composite DESC NULLS LAST)`.
+  `fmz_total` is `COUNT(*) OVER (PARTITION BY fmz_zone)` — window functions fire before
+  LIMIT so fmz_total is accurate regardless of the response limit.
+- `total_count` on the FeatureCollection is the pre-LIMIT matching count (cross-joined
+  from a `total AS (SELECT COUNT(*) FROM scored)` CTE).
+- Radius filter: `near_lat`, `near_lon`, `radius_km` must all be provided together or
+  not at all. Uses `ST_DWithin` with the stored EPSG:3161 geometry — no index needed
+  beyond the existing GiST index.
+- `normalizedRank` no longer exists — `composite` (0–1 float) is used directly for
+  both map coloring and panel badge colors.
+- SQL fragments `{fmz_filter}` and `{radius_filter}` are formatted in Python, not
+  passed as nullable params, to avoid PostgreSQL null-in-parameterized-query ambiguity.
+
+### Frontend
 - `react-map-gl/mapbox` v8 event type is `MapMouseEvent` (from mapbox-gl), NOT
   `MapLayerMouseEvent`. The latter does not exist in this version.
 - `SheetTitle` from shadcn wraps Radix `Dialog.Title` and requires being inside a
   `<Sheet>` (Dialog) context. Do not use it outside the Sheet wrapper — use a plain
-  `<h2>` with `className="font-heading font-medium text-foreground"` instead.
+  `<h2>` instead.
 - The side panel is a `motion.div` (not a Sheet Dialog) to avoid modal behavior
   conflicting with Mapbox map interactions. `SheetHeader` (a plain div) is reused
   for consistent spacing.
 - In React 19, `useRef<T>(null)` returns `RefObject<T | null>`. Prop types for refs
   should be `React.RefObject<T | null>`, not `React.RefObject<T>`.
+- **Single `debounceRef`** is shared across `handleWeightsChange`, `handleLocationChange`,
+  and `handleRadiusChange`. Whichever fires last wins — no concurrent fetches.
+- `handleLocationChange` and `handleRadiusChange` do **not** call `fitBounds`.
+  The existing `useEffect([candidates, mapReady])` fires after every fetch and zooms
+  to the returned candidates' bounding box — the correct view. Adding a pre-fetch
+  fitBounds would race with this.
+- `handleFmzChange` calls `fitBounds` to the FMZ bbox only when no radius filter is
+  active (`!nearLocation || !radiusKm`). If filter is active, candidates useEffect
+  handles positioning.
+- Weight slider `min` is `0.01` (not `0`) — prevents all-zero weight state that
+  would send sum=0 to the API and return 422.
+- `FMZ_BBOXES` in `page.tsx` are hardcoded for v1 — should eventually be derived
+  from `GET /regions` once that endpoint exposes bboxes.
+- Active radius pill click is a **no-op** — pills do not toggle off. "Clear filter"
+  is the only deactivation path. This avoids the confusing state where location is
+  set but radius is null (which sends no radius param despite the filter appearing active).
+- `NearLocation.accuracy` (metres, browser geolocation only) is displayed as `±N km`
+  in the panel. Highlighted orange if accuracy > 1000 m.
 
 ## Key design principles
 - Decision support, not automation. Show all candidates, never hide.
@@ -94,7 +161,6 @@ Pipeline runs end-to-end: ingest → score → API → map view.
   or library behaviors.
 - If something I'm asking for is a bad idea, push back before
   implementing it.
-- If you notice scope creep beyond Phase 1's deliverable, flag it.
 - Decisions about what feels like a good fishing spot, what species
   matter, or how the UI should feel are mine to make. Give me options,
   don't decide for me.
@@ -105,6 +171,15 @@ Pipeline runs end-to-end: ingest → score → API → map view.
 - Trip data (actual GPS coordinates of validated spots) is never
   committed. Trip logs go in a gitignored `private/` folder.
 
-  ## Known issue: 
-  
-  OHN NaN string normalization. The .where() chain in backend/ingest/ohn_waterbody.py and backend/ingest/ohn_watercourse.py is supposed to convert literal "NaN" strings in the name column to NULL but doesn't take effect (root cause not yet diagnosed — the logic looks correct on inspection). After every re-ingestion of waterbody or watercourse data, manually run: UPDATE candidates SET name = NULL WHERE name = 'NaN'; Verify with SELECT COUNT(*) FROM candidates WHERE name = 'NaN'; returning 0 before proceeding to downstream scoring or graph operations.
+## Known issues
+
+**OHN NaN string normalization**: The `.where()` chain in `backend/ingest/ohn_waterbody.py`
+and `backend/ingest/ohn_watercourse.py` is supposed to convert literal `"NaN"` strings in
+the `name` column to NULL but doesn't take effect (root cause not yet diagnosed — the logic
+looks correct on inspection). After every re-ingestion of waterbody or watercourse data,
+manually run:
+```sql
+UPDATE candidates SET name = NULL WHERE name = 'NaN';
+```
+Verify with `SELECT COUNT(*) FROM candidates WHERE name = 'NaN';` returning 0 before
+proceeding to downstream scoring or graph operations.

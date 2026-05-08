@@ -1,5 +1,13 @@
 import type { Feature, FeatureCollection, Geometry } from "geojson"
 
+export interface NearLocation {
+  lat: number
+  lon: number
+  accuracy?: number  // metres, from browser geolocation only
+}
+
+export type RadiusKm = 30 | 60 | 100
+
 export interface Weights {
   w_h: number
   w_a: number

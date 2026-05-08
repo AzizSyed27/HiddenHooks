@@ -108,6 +108,7 @@ WITH scored AS (
     WHERE is_active = TRUE
       AND geom IS NOT NULL
       {fmz_filter}
+      {radius_filter}
 ),
 total AS (
     SELECT COUNT(*) AS n FROM scored
@@ -162,14 +163,29 @@ def get_candidates(
     w_e: float = Query(default=0.25, ge=0.0),
     fmz: str | None = Query(default=None, pattern="^FMZ1[67]$"),
     limit: int = Query(default=2000, ge=1, le=10000),
+    near_lat: float | None = Query(default=None, ge=41.0, le=50.0),
+    near_lon: float | None = Query(default=None, ge=-85.0, le=-74.0),
+    radius_km: float | None = Query(default=None, ge=1.0, le=500.0),
 ) -> CandidateFeatureCollection:
     weight_sum = w_h + w_a + w_f + w_e
     if weight_sum <= 0:
         raise HTTPException(status_code=422, detail="At least one weight must be > 0")
     w_h, w_a, w_f, w_e = w_h / weight_sum, w_a / weight_sum, w_f / weight_sum, w_e / weight_sum
 
+    has_loc = (near_lat is not None) or (near_lon is not None)
+    if has_loc and (near_lat is None or near_lon is None):
+        raise HTTPException(status_code=422, detail="near_lat and near_lon must both be provided together")
+    if has_loc and radius_km is None:
+        raise HTTPException(status_code=422, detail="radius_km is required when near_lat/near_lon are set")
+    if radius_km is not None and not has_loc:
+        raise HTTPException(status_code=422, detail="radius_km requires near_lat and near_lon")
+
     fmz_filter = "AND fmz_zone = :fmz" if fmz else ""
-    sql = text(_CANDIDATES_SQL_TEMPLATE.format(fmz_filter=fmz_filter))
+    radius_filter = (
+        "AND ST_DWithin(geom, ST_Transform(ST_SetSRID(ST_MakePoint(:near_lon, :near_lat), 4326), 3161), :radius_m)"
+        if has_loc else ""
+    )
+    sql = text(_CANDIDATES_SQL_TEMPLATE.format(fmz_filter=fmz_filter, radius_filter=radius_filter))
 
     params: dict[str, Any] = {
         "w_h": w_h, "w_a": w_a, "w_f": w_f, "w_e": w_e,
@@ -177,6 +193,10 @@ def get_candidates(
     }
     if fmz:
         params["fmz"] = fmz
+    if has_loc:
+        params["near_lon"] = near_lon
+        params["near_lat"] = near_lat
+        params["radius_m"] = radius_km * 1000  # type: ignore[operator]
 
     with engine.connect() as conn:
         rows = conn.execute(sql, params).mappings().all()

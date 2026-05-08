@@ -1,7 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import type { CandidateFeature } from "@/lib/types"
+import type { CandidateFeature, RadiusKm } from "@/lib/types"
 
 export function ConfidenceDot({ confidence }: { confidence: string | null }) {
   const colors: Record<string, string> = {
@@ -54,9 +54,10 @@ function ScoreBar({ label, value, barClass }: ScoreBarProps) {
 
 interface CandidateDetailProps {
   feature: CandidateFeature
+  radiusKm: RadiusKm | null
 }
 
-export default function CandidateDetail({ feature }: CandidateDetailProps) {
+export default function CandidateDetail({ feature, radiusKm }: CandidateDetailProps) {
   const p = feature.properties
 
   const name =
@@ -90,6 +91,7 @@ export default function CandidateDetail({ feature }: CandidateDetailProps) {
         {fmzLabel}
         {" · "}
         Rank #{p.rank.toLocaleString()} of {p.fmz_total.toLocaleString()} in {fmzLabel}
+        {radiusKm ? ` within ${radiusKm} km` : ""}
       </p>
 
       {/* Size */}

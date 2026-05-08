@@ -307,11 +307,11 @@ Verify in the plan:
 Use ST_DWithin with the spatial index, not nested loops. Estimate the runtime — this is a self-join with a spatial predicate over ~100k+ candidates. Show me the SQL plan and a runtime estimate before generating."
 
 Verify in the plan:
-- [ ] Self-edges and duplicates are excluded
-- [ ] Polygon-polygon edges are restricted appropriately
-- [ ] reach_full rows that have been segmented are excluded
-- [ ] The `c1.id < c2.id` ordering enforces undirected uniqueness
-- [ ] Spatial index is used (EXPLAIN should show Index Scan, not Seq Scan)
+- [x] Self-edges and duplicates are excluded
+- [x] Polygon-polygon edges are restricted appropriately
+- [x] reach_full rows that have been segmented are excluded
+- [x] The `c1.id < c2.id` ordering enforces undirected uniqueness
+- [x] Spatial index is used (EXPLAIN should show Index Scan, not Seq Scan)
 
 ### Sanity checks
 
@@ -334,8 +334,8 @@ This is the values document that encodes "the aim are the bigger fish." It's a C
 
 ### Author the CSV
 
-- [ ] Create `data/species_values.csv` with columns: `species_name`, `weight`, `notes`
-- [ ] Use the species names exactly as they appear in ARA's `FISH_SPECIES_SUMMARY` field (case-sensitive — verify by querying ARA after Part 6, but you can start authoring now)
+- [x] Create `data/species_values.csv` with columns: `species_name`, `weight`, `notes`
+- [x] Use the species names exactly as they appear in ARA's `FISH_SPECIES_SUMMARY` field (case-sensitive — verify by querying ARA after Part 6, but you can start authoring now)
 - [ ] Suggested starting weights (your call, override based on your fishing values):
   - Walleye, Northern Pike, Muskellunge, Smallmouth Bass, Largemouth Bass: **8-10**
   - Brook Trout, Brown Trout, Rainbow Trout, Lake Trout: **8-9**
@@ -345,9 +345,9 @@ This is the values document that encodes "the aim are the bigger fish." It's a C
   - Common Carp, White Sucker, Longnose Sucker, Redhorse species: **2-3**
   - Stonerollers, Dace species, Shiners, Chubs (small forage): **1-2**
   - Anything you don't recognize or care about: **1**
-- [ ] Add notes per row explaining why. Future-you will want to know why hornyhead chub got the weight it did.
-- [ ] Add a header comment at the top of the CSV documenting your weighting philosophy (your Phase 0 stance: avoid minnow streams, prioritize big-fish species)
-- [ ] FMZ 17 will likely surface walleye/muskie populations that FMZ 16 doesn't have. Make sure those species are in your CSV with thoughtful weights — they're going to drive a lot of FMZ 17's F-scoring.
+- [x] Add notes per row explaining why. Future-you will want to know why hornyhead chub got the weight it did.
+- [x] Add a header comment at the top of the CSV documenting your weighting philosophy (your Phase 0 stance: avoid minnow streams, prioritize big-fish species)
+- [x] FMZ 17 will likely surface walleye/muskie populations that FMZ 16 doesn't have. Make sure those species are in your CSV with thoughtful weights — they're going to drive a lot of FMZ 17's F-scoring.
 
 ### Schema and ingestion
 
@@ -619,23 +619,23 @@ Verify:
 Show the component diffs before generating, especially: (a) where region selector state lives (page.tsx or panel?), (b) whether the map view also re-filters when region changes, (c) slider state management."
 
 Verify:
-- [ ] Slider re-fetch is debounced (300ms is reasonable)
-- [ ] Loading state during re-fetch is visible (subtle spinner or fade), not jarring
-- [ ] Region selector triggers both panel update AND map source data update
-- [ ] Color-coding for confidence is accessible (don't rely on color alone — also use letter or icon)
-- [ ] **Run `npm run build` after every component change.** TypeScript build errors don't surface in dev mode (Phase 1 lesson).
+- [x] Slider re-fetch is debounced (300ms is reasonable)
+- [x] Loading state during re-fetch is visible (subtle spinner or fade), not jarring
+- [x] Region selector triggers both panel update AND map source data update
+- [x] Color-coding for confidence is accessible (don't rely on color alone — also use letter or icon)
+- [x] **Run `npm run build` after every component change.** TypeScript build errors don't surface in dev mode (Phase 1 lesson).
 
 ### Map updates
 
-- [ ] Color expression on map layers should now use the composite score, not normalizedRank. Expose composite as a feature property.
-- [ ] On weight change OR region change, the map source data updates → layer recolors automatically (Mapbox handles this if `data` prop reference changes — make sure the parent uses `useMemo` correctly)
-- [ ] Map should `fitBounds` to the selected region when the user changes selection (FMZ 16 only → zoom to FMZ 16 envelope; both → zoom to combined envelope). Use the regions endpoint or hardcode the envelopes for v1.
-- [ ] Optional: tint reach_segments slightly differently from polygons so the panel and map agree on type at a glance
+- [x] Color expression on map layers should now use the composite score, not normalizedRank. Expose composite as a feature property.
+- [x] On weight change OR region change, the map source data updates → layer recolors automatically (Mapbox handles this if `data` prop reference changes — make sure the parent uses `useMemo` correctly)
+- [x] Map should `fitBounds` to the selected region when the user changes selection (FMZ 16 only → zoom to FMZ 16 envelope; both → zoom to combined envelope). Use the regions endpoint or hardcode the envelopes for v1.
+- [x] Optional: tint reach_segments slightly differently from polygons so the panel and map agree on type at a glance
 
 ### Merge to main
 
-- [ ] Branch sanity check: app loads with both regions, region selector works, weights work, scores display, map zooms correctly per region selection
-- [ ] Merge `phase-2/08-api-frontend` to `main`
+- [x] Branch sanity check: app loads with both regions, region selector works, weights work, scores display, map zooms correctly per region selection
+- [x] Merge `phase-2/08-api-frontend` to `main`
 
 ---
 
@@ -643,21 +643,21 @@ Verify:
 
 This is not a polish step. It's a verification step that everything still works together across both regions. **Run it at the midpoint (after Part 7) and again at the end (before tagging).**
 
-- [ ] Stop everything. Restart Docker, restart backend, restart frontend.
-- [ ] Open `http://localhost:3000`.
-- [ ] Map loads with custom basemap, scoped to combined FMZ 16 + FMZ 17 region.
-- [ ] No candidates in Lake Ontario, Lake Simcoe shoreline anomalies absent. (If any, Part 1 land mask broke. Stop and fix.)
-- [ ] Both polygons and reach_segments visible on map across both regions.
-- [ ] Side panel shows ranked list. Region selector defaults to 'Both' or to one — check both modes.
-- [ ] Switch region selector to 'FMZ 16' only — map zooms, list filters, ranks show 'in FMZ 16.' Top 5 candidates change.
-- [ ] Switch to 'FMZ 17' — same behavior, different candidates, ranks show 'in FMZ 17.'
-- [ ] Click a top candidate in each region. Detail card opens. All four sub-scores display, FMZ shows correctly, raw inputs display, f_species shows actual species names from your CSV.
-- [ ] Confidence badge displays correctly. Strong/Plausible/Speculative distribution should look notably different between regions — FMZ 17 with more 'strong' due to better ARA coverage.
-- [ ] Adjust weight sliders. Top candidates change as expected within each region. (Set w_f=1.0; the top candidates should be ARA-anchored ones with the most valuable species.)
-- [ ] **Cross-region inference verification**: with region='Both' and w_f=1.0, find a candidate in FMZ 16 ranked highly with `f_confidence='plausible'` and `f_inferred_from_ara_id` pointing to an ARA point in FMZ 17. This is the "cross-region graph paid off" check. If you can't find one, the graph isn't bridging the boundary correctly.
-- [ ] Pick one of your Phase 0 manual gem candidates (Scarborough/Rouge area, FMZ 16) and one of your real Pickering/Ajax fishing spots (FMZ 17). Search for each in the panel. Where do they rank within their respective regions? Does the rank match your intuition?
-- [ ] Walk through the full data path one more time, out loud or in writing: shapefile → ingestion (with FMZ tagging) → simplification → land mask → segmentation (FMZ inherited) → cross-region connectivity graph → ARA snap → species lookup → four-component scoring (H per-region, others global) → API (per-region rank) → frontend → pixel. You should be able to explain every hop without hesitating, including which steps are per-region and which are global.
-- [ ] If anything fails: do not declare Phase 2 done. Open a fix branch off main, fix, re-run smoke test.
+- [x] Stop everything. Restart Docker, restart backend, restart frontend.
+- [x] Open `http://localhost:3000`.
+- [x] Map loads with custom basemap, scoped to combined FMZ 16 + FMZ 17 region.
+- [x] No candidates in Lake Ontario, Lake Simcoe shoreline anomalies absent. (If any, Part 1 land mask broke. Stop and fix.)
+- [x] Both polygons and reach_segments visible on map across both regions.
+- [x] Side panel shows ranked list. Region selector defaults to 'Both' or to one — check both modes.
+- [x] Switch region selector to 'FMZ 16' only — map zooms, list filters, ranks show 'in FMZ 16.' Top 5 candidates change.
+- [x] Switch to 'FMZ 17' — same behavior, different candidates, ranks show 'in FMZ 17.'
+- [x] Click a top candidate in each region. Detail card opens. All four sub-scores display, FMZ shows correctly, raw inputs display, f_species shows actual species names from your CSV.
+- [x] Confidence badge displays correctly. Strong/Plausible/Speculative distribution should look notably different between regions — FMZ 17 with more 'strong' due to better ARA coverage.
+- [x] Adjust weight sliders. Top candidates change as expected within each region. (Set w_f=1.0; the top candidates should be ARA-anchored ones with the most valuable species.)
+- [x] **Cross-region inference verification**: with region='Both' and w_f=1.0, find a candidate in FMZ 16 ranked highly with `f_confidence='plausible'` and `f_inferred_from_ara_id` pointing to an ARA point in FMZ 17. This is the "cross-region graph paid off" check. If you can't find one, the graph isn't bridging the boundary correctly.
+- [x] Pick one of your Phase 0 manual gem candidates (Scarborough/Rouge area, FMZ 16) and one of your real Pickering/Ajax fishing spots (FMZ 17). Search for each in the panel. Where do they rank within their respective regions? Does the rank match your intuition?
+- [x] Walk through the full data path one more time, out loud or in writing: shapefile → ingestion (with FMZ tagging) → simplification → land mask → segmentation (FMZ inherited) → cross-region connectivity graph → ARA snap → species lookup → four-component scoring (H per-region, others global) → API (per-region rank) → frontend → pixel. You should be able to explain every hop without hesitating, including which steps are per-region and which are global.
+- [x] If anything fails: do not declare Phase 2 done. Open a fix branch off main, fix, re-run smoke test.
 
 ---
 

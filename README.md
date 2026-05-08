@@ -1,21 +1,27 @@
 # HiddenHooks
 
 A geospatial tool for finding under-fished water bodies in Ontario. Pulls hydrology
-data from the Ontario Hydro Network, road network from OpenStreetMap, and ranks water
-bodies and stream reaches by how hidden they are from roads. Built as a personal /
-portfolio project.
+data from the Ontario Hydro Network (OHN), road and trail network from OpenStreetMap,
+fish survey data from the Ontario Aquatic Resource Areas (ARA) dataset, and ranks water
+bodies and stream reaches by a multi-component score. Built as a personal / portfolio project.
 
 ---
 
-## Current phase: Phase 1 — Vertical slice
+## Current phase: Phase 2 — Full scoring pipeline
 
-End-to-end pipeline on a test region (~20 km radius around Rouge National Urban Park,
-Scarborough, ON). Single scoring signal: distance to nearest road. The full map view
-is working — candidates are ranked, colored by hiddenness, and clickable.
+Coverage: **FMZ 16 and FMZ 17** (southern and central Ontario).
 
-Planned signals for later phases: accessibility (drive time, trail proximity),
-fish species potential, and ecology bonuses. Scoring weights will be tunable per
-query.
+Four scoring components, each weighted independently per query:
+
+| Signal | Label | Description |
+|---|---|---|
+| Hiddenness | H | Distance to nearest road — higher is more hidden |
+| Accessibility | A | Proximity to trails and parking — lower distance = more accessible |
+| Fish potential | F | ARA species survey match — strong / plausible / speculative confidence tiers |
+| Ecology bonus | E | Habitat quality and connectivity through the reach network |
+
+Weights are tunable from the panel. The composite score drives map color and per-FMZ rank.
+A radius filter lets you limit candidates to within 30, 60, or 100 km of a chosen location.
 
 ---
 
@@ -24,12 +30,12 @@ query.
 | Layer | Tools |
 |---|---|
 | Database | PostgreSQL 16 + PostGIS 3.4 (Docker) |
-| Backend | Python 3.11, FastAPI, SQLAlchemy, GeoPandas, OSMnx |
+| Backend | Python 3.11, FastAPI, SQLAlchemy, GeoPandas, OSMnx, NetworkX |
 | Frontend | Next.js 16, React 19, TypeScript |
 | Map | Mapbox GL JS via react-map-gl, custom basemap style |
 | UI | shadcn/ui, Tailwind CSS 4, Framer Motion, Lucide icons |
 | Fonts | Poppins (UI chrome), Lora (candidate names) |
-| AI layer | Anthropic API — planned for later phases |
+| AI layer | Anthropic API — planned for a later phase |
 
 ---
 
@@ -38,7 +44,7 @@ query.
 ### Prerequisites
 
 - Docker Desktop
-- Python 3.11+ (conda environment recommended)
+- Python 3.11+ (conda environment: `hiddenhooks`)
 - Node.js 20+
 - A Mapbox account — access token and a custom style URL
 
@@ -50,13 +56,12 @@ docker compose up -d
 ```
 
 The PostGIS container starts on port 5432. On first run it applies the schema from
-`docker/initdb/`. If the container already exists with data, the init scripts are
-skipped.
+`docker/initdb/`. If the container already exists with data, the init scripts are skipped.
 
 ### 2. Set up the Python environment
 
 ```bash
-conda activate hiddenhooks   # or: pip install -r backend/requirements.txt
+conda activate hiddenhooks
 ```
 
 ### 3. Ingest data
@@ -65,28 +70,50 @@ OHN shapefiles are expected at:
 - `phase-0-data/ohn/Ontario_Hydro_Network_(OHN)_-_Waterbody/`
 - `phase-0-data/ohn/Ontario_Hydro_Network_(OHN)_-_Watercourse/`
 
+ARA shapefile is expected at:
+- `phase-0-data/ara/`
+
 Download from [Ontario GeoHub](https://geohub.lio.gov.on.ca/) and place them there.
 
 ```bash
 cd backend
 python -m ingest.ohn_waterbody
 python -m ingest.ohn_watercourse
-python -m ingest.roads          # downloads OSM road network, caches to cache/
-python -m scoring.dist_to_road  # ~8 min on first run
+python -m ingest.roads             # downloads OSM road network, caches to cache/
+```
+
+> **Known issue:** OHN ingest may leave literal `"NaN"` strings in the `name` column.
+> After each waterbody or watercourse ingest, run:
+> `UPDATE candidates SET name = NULL WHERE name = 'NaN';`
+
+### 4. Run scoring scripts
+
+```bash
+python -m scoring.dist_to_road          # ~8 min — populates h_score proxy
+python -m scoring.snap_ara_to_candidates
+python -m scoring.build_connectivity
+python -m scoring.score_hiddenness
+python -m scoring.score_accessibility
+python -m scoring.score_fish_potential
+python -m scoring.score_ecology
 ```
 
 Each script is idempotent — safe to re-run.
 
-### 4. Start the API
+### 5. Start the API
 
 ```bash
 cd backend
 python -m uvicorn api.main:app --port 8000 --reload
 ```
 
-Verify: `curl http://localhost:8000/candidates | python -m json.tool | head -20`
+Endpoints:
+- `GET /health` — liveness check
+- `GET /regions` — list FMZ zones with candidate counts
+- `GET /candidates` — scored GeoJSON with optional `fmz`, `w_h/w_a/w_f/w_e` weights,
+  and `near_lat`/`near_lon`/`radius_km` radius filter
 
-### 5. Configure frontend environment
+### 6. Configure frontend environment
 
 Create `frontend/.env.local`:
 
@@ -96,7 +123,7 @@ NEXT_PUBLIC_MAPBOX_STYLE=mapbox://styles/your_username/your_style_id
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
-### 6. Start the frontend
+### 7. Start the frontend
 
 ```bash
 cd frontend
@@ -113,23 +140,24 @@ Open [http://localhost:3000](http://localhost:3000).
 ```
 docker/
   docker-compose.yml
-  initdb/               schema SQL applied on first container start
+  initdb/                    schema SQL applied on first container start
 
 backend/
-  config.py             centralised paths + DATABASE_URL
-  ingest/               OHN waterbody, watercourse, OSM roads
-  scoring/              dist_to_road (Phase 1)
-  api/                  FastAPI app — GET /candidates
+  config.py                  centralised paths + DATABASE_URL
+  ingest/                    OHN waterbody, watercourse, OSM roads, ARA
+  scoring/                   dist_to_road, hiddenness, accessibility,
+                             fish_potential, ecology, snap_ara, connectivity
+  api/                       FastAPI app — /health, /regions, /candidates
 
 frontend/
-  app/                  Next.js App Router pages
+  app/                       Next.js App Router pages
   components/
-    map/                MapView (react-map-gl layers)
-    panel/              CandidatePanel (side panel + detail card)
-  lib/                  shared types, utilities
+    map/                     MapView (react-map-gl layers, composite coloring)
+    panel/                   CandidatePanel, CandidateDetail, LocationFilter
+  lib/                       shared types, utilities
 
-phase-0-data/           raw data files — not committed
-private/                trip logs — not committed, gitignored
+phase-0-data/                raw data files — not committed
+private/                     trip logs — not committed, gitignored
 ```
 
 ---
@@ -139,6 +167,6 @@ private/                trip logs — not committed, gitignored
 - Trip data (actual GPS coordinates of validated spots) is never committed.
   Personal logs go in `private/` which is gitignored.
 - The repo is private during development.
-- OHN has a trails dataset that can be later subsituted for the Osmx data set used currently.
-- Research more fish survey datasets like ARA in ontario for better resuts.
-- Will put results to the test by going there in person.
+- OHN has a trails dataset that could replace the OSMnx data in a future iteration.
+- ARA survey coverage varies significantly across FMZ 16 vs FMZ 17 — fish confidence
+  tiers (strong / plausible / speculative) reflect this uncertainty explicitly.

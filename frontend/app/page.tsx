@@ -6,7 +6,7 @@ import { ChevronRight } from "lucide-react"
 import type { MapRef } from "react-map-gl/mapbox"
 import MapView from "@/components/map/MapView"
 import CandidatePanel from "@/components/panel/CandidatePanel"
-import type { CandidateCollection, Weights } from "@/lib/types"
+import type { CandidateCollection, Weights, NearLocation, RadiusKm } from "@/lib/types"
 
 type Bbox = [number, number, number, number]
 
@@ -50,10 +50,14 @@ export default function Home() {
   const [mapReady, setMapReady] = useState(false)
   const [fmz, setFmz] = useState<"FMZ16" | "FMZ17" | null>(null)
   const [weights, setWeights] = useState<Weights>(DEFAULT_WEIGHTS)
+  const [nearLocation, setNearLocation] = useState<NearLocation | null>(null)
+  const [radiusKm, setRadiusKm] = useState<RadiusKm | null>(null)
 
   const fetchCandidates = useCallback(async (
     currentFmz: "FMZ16" | "FMZ17" | null,
     currentWeights: Weights,
+    currentLocation: NearLocation | null,
+    currentRadiusKm: RadiusKm | null,
   ) => {
     setLoading(true)
     setError(null)
@@ -65,6 +69,11 @@ export default function Home() {
         w_e: currentWeights.w_e.toString(),
       })
       if (currentFmz) qs.set("fmz", currentFmz)
+      if (currentLocation && currentRadiusKm) {
+        qs.set("near_lat", currentLocation.lat.toString())
+        qs.set("near_lon", currentLocation.lon.toString())
+        qs.set("radius_km", currentRadiusKm.toString())
+      }
       const res = await fetch(`${API_URL}/candidates?${qs}`)
       if (!res.ok) throw new Error(`API error ${res.status}`)
       setCandidates((await res.json()) as CandidateCollection)
@@ -76,7 +85,7 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    fetchCandidates(null, DEFAULT_WEIGHTS)
+    fetchCandidates(null, DEFAULT_WEIGHTS, null, null)
   }, [fetchCandidates])
 
   // Fit the viewport to the full candidate set once both map and data are ready.
@@ -112,21 +121,55 @@ export default function Home() {
   const handleFmzChange = useCallback(
     (newFmz: "FMZ16" | "FMZ17" | null) => {
       setFmz(newFmz)
-      fetchCandidates(newFmz, weights)
-      const bbox = newFmz ? FMZ_BBOXES[newFmz] : FMZ_BBOXES.COMBINED
-      mapRef.current?.fitBounds(bbox, { padding: 40, duration: 1200 })
+      fetchCandidates(newFmz, weights, nearLocation, radiusKm)
+      if (!nearLocation || !radiusKm) {
+        const bbox = newFmz ? FMZ_BBOXES[newFmz] : FMZ_BBOXES.COMBINED
+        mapRef.current?.fitBounds(bbox, { padding: 40, duration: 1200 })
+      }
     },
-    [fetchCandidates, weights],
+    [fetchCandidates, weights, nearLocation, radiusKm],
   )
 
   const handleWeightsChange = useCallback(
     (newWeights: Weights) => {
       setWeights(newWeights)
       if (debounceRef.current) clearTimeout(debounceRef.current)
-      debounceRef.current = setTimeout(() => fetchCandidates(fmz, newWeights), 300)
+      debounceRef.current = setTimeout(
+        () => fetchCandidates(fmz, newWeights, nearLocation, radiusKm), 300
+      )
     },
-    [fetchCandidates, fmz],
+    [fetchCandidates, fmz, nearLocation, radiusKm],
   )
+
+  const handleLocationChange = useCallback(
+    (newLoc: NearLocation | null) => {
+      setNearLocation(newLoc)
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      debounceRef.current = setTimeout(
+        () => fetchCandidates(fmz, weights, newLoc, radiusKm), 300
+      )
+    },
+    [fetchCandidates, fmz, weights, radiusKm],
+  )
+
+  const handleRadiusChange = useCallback(
+    (newRadius: RadiusKm) => {
+      setRadiusKm(newRadius)
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      debounceRef.current = setTimeout(
+        () => fetchCandidates(fmz, weights, nearLocation, newRadius), 300
+      )
+    },
+    [fetchCandidates, fmz, weights, nearLocation],
+  )
+
+  const handleRadiusClear = useCallback(() => {
+    setNearLocation(null)
+    setRadiusKm(null)
+    fetchCandidates(fmz, weights, null, null)
+    const bbox = fmz ? FMZ_BBOXES[fmz] : FMZ_BBOXES.COMBINED
+    mapRef.current?.fitBounds(bbox, { padding: 40, duration: 1200 })
+  }, [fetchCandidates, fmz, weights])
 
   return (
     <div className="relative h-screen w-screen overflow-hidden">
@@ -140,7 +183,7 @@ export default function Home() {
           <div className="rounded-lg bg-popover p-6 shadow-xl">
             <p className="text-sm text-destructive">{error}</p>
             <button
-              onClick={() => fetchCandidates(fmz, weights)}
+              onClick={() => fetchCandidates(fmz, weights, nearLocation, radiusKm)}
               className="mt-3 text-sm underline hover:no-underline"
             >
               Retry
@@ -168,6 +211,11 @@ export default function Home() {
             onFmzChange={handleFmzChange}
             weights={weights}
             onWeightsChange={handleWeightsChange}
+            nearLocation={nearLocation}
+            radiusKm={radiusKm}
+            onLocationChange={handleLocationChange}
+            onRadiusChange={handleRadiusChange}
+            onRadiusClear={handleRadiusClear}
           />
         )}
       </AnimatePresence>

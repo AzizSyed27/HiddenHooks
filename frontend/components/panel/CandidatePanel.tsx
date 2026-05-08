@@ -9,9 +9,12 @@ import type {
   CandidateCollection,
   CandidateFeature,
   CandidateProperties,
+  NearLocation,
+  RadiusKm,
   Weights,
 } from "@/lib/types"
 import CandidateDetail, { ConfidenceDot } from "./CandidateDetail"
+import LocationFilter from "./LocationFilter"
 
 // Mirrors the MapView RANK_COLOR expression: 0 (low composite) = slate → 1 (high) = amber
 function compositeColor(composite: number): string {
@@ -45,6 +48,11 @@ interface CandidatePanelProps {
   onFmzChange: (fmz: "FMZ16" | "FMZ17" | null) => void
   weights: Weights
   onWeightsChange: (weights: Weights) => void
+  nearLocation: NearLocation | null
+  radiusKm: RadiusKm | null
+  onLocationChange: (loc: NearLocation | null) => void
+  onRadiusChange: (radius: RadiusKm) => void
+  onRadiusClear: () => void
 }
 
 export default function CandidatePanel({
@@ -56,6 +64,11 @@ export default function CandidatePanel({
   onFmzChange,
   weights,
   onWeightsChange,
+  nearLocation,
+  radiusKm,
+  onLocationChange,
+  onRadiusChange,
+  onRadiusClear,
 }: CandidatePanelProps) {
   const selectedFeature: CandidateFeature | null =
     selectedId != null
@@ -133,6 +146,15 @@ export default function CandidatePanel({
         ))}
       </div>
 
+      {/* Distance filter */}
+      <LocationFilter
+        nearLocation={nearLocation}
+        radiusKm={radiusKm}
+        onLocationChange={onLocationChange}
+        onRadiusChange={onRadiusChange}
+        onClear={onRadiusClear}
+      />
+
       {/* Detail card */}
       <AnimatePresence>
         {selectedFeature && (
@@ -143,7 +165,7 @@ export default function CandidatePanel({
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15 }}
           >
-            <CandidateDetail feature={selectedFeature} />
+            <CandidateDetail feature={selectedFeature} radiusKm={radiusKm} />
           </motion.div>
         )}
       </AnimatePresence>

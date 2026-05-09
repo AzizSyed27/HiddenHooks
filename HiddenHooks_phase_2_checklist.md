@@ -685,27 +685,27 @@ Same prompts as Phase 1, plus Phase-2-specific ones, plus dual-region prompts.
 
 ### Commit and tag
 
-- [ ] `git add -A && git commit -m "Phase 2: four-component scoring across FMZ 16 + FMZ 17"`
-- [ ] Push to GitHub
-- [ ] Tag: `git tag phase-2-complete && git push --tags`
+- [x] `git add -A && git commit -m "Phase 2: four-component scoring across FMZ 16 + FMZ 17"`
+- [x] Push to GitHub
+- [x] Tag: `git tag phase-2-complete && git push --tags`
 
 ---
 
 ## Done criteria
 
 You're done with Phase 2 when:
-- [ ] App loads, with both FMZ 16 and FMZ 17 covered, including 200m reach segments in each
-- [ ] All four sub-scores populated for active candidates in both regions
-- [ ] Confidence tier (Strong/Plausible/Speculative) is visible per candidate
-- [ ] FMZ identity is visible per candidate, and a region filter works
-- [ ] Per-region ranks are displayed correctly
-- [ ] Weight sliders work and re-rank within each region
-- [ ] Top-ranked candidates within each region look defensible — none in Lake Ontario, none obviously absurd
-- [ ] At least one demonstrable cross-region inference exists (FMZ 16 candidate inferred from FMZ 17 ARA via graph)
-- [ ] You can explain every component's computation out loud, including which parts are per-region and which are global
-- [ ] All workstream branches are merged to main
-- [ ] Integration smoke test passes for both regions
-- [ ] Repo is committed, tagged, documented
+- [x] App loads, with both FMZ 16 and FMZ 17 covered, including 200m reach segments in each
+- [x] All four sub-scores populated for active candidates in both regions
+- [x] Confidence tier (Strong/Plausible/Speculative) is visible per candidate
+- [x] FMZ identity is visible per candidate, and a region filter works
+- [x] Per-region ranks are displayed correctly
+- [x] Weight sliders work and re-rank within each region
+- [x] Top-ranked candidates within each region look defensible — none in Lake Ontario, none obviously absurd
+- [x] At least one demonstrable cross-region inference exists (FMZ 16 candidate inferred from FMZ 17 ARA via graph)
+- [x] You can explain every component's computation out loud, including which parts are per-region and which are global
+- [x] All workstream branches are merged to main
+- [x] Integration smoke test passes for both regions
+- [x] Repo is committed, tagged, documented
 
 You do **not** need to:
 - Have a routing layer (Phase 3 territory)

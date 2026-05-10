@@ -667,9 +667,9 @@ Same prompts as Phase 1, plus Phase-2-specific ones, plus dual-region prompts.
 
 ### Document
 
-- [ ] Update `README.md` with current state (note both FMZs are covered)
-- [ ] Update `CLAUDE.md` with anything that changed about the architecture (especially: per-region normalization principle, cross-region graph)
-- [ ] Create `docs/phase_2_reflection.md` answering:
+- [x] Update `README.md` with current state (note both FMZs are covered)
+- [x] Update `CLAUDE.md` with anything that changed about the architecture (especially: per-region normalization principle, cross-region graph)
+- [x] Create `docs/phase_2_reflection.md` answering:
   - What worked smoothly?
   - What took longer than expected, and why?
   - What surprised you about the data, the tooling, or the process?

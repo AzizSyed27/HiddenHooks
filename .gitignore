@@ -12,5 +12,7 @@ data/ontario_boundary/
 data/great_lakes
 data/ara
 data/solris
+
+backend/.env
 # OSMnx download cache
 cache/

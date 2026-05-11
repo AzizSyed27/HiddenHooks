@@ -65,9 +65,9 @@ If it returns nonzero, the scoring pipeline state has drifted (most likely from 
 
 Phase 2 caught a chronology bug where `dist_to_road.py` had a hardcoded `candidate_type IN ('polygon', 'reach_full')` filter that excluded reach_segments. The right pattern across the codebase is `WHERE is_active = TRUE`. Reinforce this for Phase 3:
 
-- [ ] Any new query in Phase 3 that filters candidates uses `is_active = TRUE`, not a hardcoded type list
-- [ ] If you find a stale type filter while working in Phase 3, fix it (don't just patch around it)
-- [ ] Document new pipeline dependencies in CLAUDE.md as you discover them
+- [x] Any new query in Phase 3 that filters candidates uses `is_active = TRUE`, not a hardcoded type list
+- [x] If you find a stale type filter while working in Phase 3, fix it (don't just patch around it)
+- [x] Document new pipeline dependencies in CLAUDE.md as you discover them
 
 ### The "you might be wrong" prompt
 
@@ -82,16 +82,16 @@ In Phase 2 you used "what's the case this approach is wrong, what would change a
 
 In addition to Phase 1's and Phase 2's slash commands, add to `.claude/commands/`:
 
-- [ ] `/route-explain` — Given a candidate ID and the current location filter, walk through the routing decisions: which parking, which trail node, what edges, what walk time, what failure mode if any.
-- [ ] `/mapbox-debug` — Given an isochrone request that returned an unexpected polygon, inspect the request URL, the response shape, and any rate-limit or quota signals.
+- [x] `/route-explain` — Given a candidate ID and the current location filter, walk through the routing decisions: which parking, which trail node, what edges, what walk time, what failure mode if any.
+- [x] `/mapbox-debug` — Given an isochrone request that returned an unexpected polygon, inspect the request URL, the response shape, and any rate-limit or quota signals.
 
 ### Mid-phase fatigue protocol (carries forward from Phase 2)
 
 Same protocol, same symptoms. Phase 3 is shorter, but Mapbox debugging and graph correctness are both topics that can swallow a weekend. If you're skipping verification or writing without Plan Mode:
 
-- [ ] Don't push through. Pause for a session.
-- [ ] Re-read this Part 0 and the Phase 3 deliverable description.
-- [ ] Run the scoring-completeness query and the integration smoke test list to ground yourself in what's actually broken vs what *feels* broken.
+- [x] Don't push through. Pause for a session.
+- [x] Re-read this Part 0 and the Phase 3 deliverable description.
+- [x] Run the scoring-completeness query and the integration smoke test list to ground yourself in what's actually broken vs what *feels* broken.
 
 ### Schema and data hygiene reminders from Phase 2
 
@@ -107,20 +107,20 @@ This is the foundation for Part 2. Pure plumbing — bring Mapbox into the codeb
 
 ### Set up the API key
 
-- [ ] Sign in to your Mapbox account (you have one from Phase 1 for the basemap)
-- [ ] Account → Tokens → create a new token scoped only to the Isochrones API endpoint (don't reuse the public token from Phase 1)
-- [ ] Save in `backend/.env`: `MAPBOX_API_KEY=sk.your_token_here`
-- [ ] Verify `.env` is in `.gitignore` (it should be from Phase 1, but check)
-- [ ] If the file isn't there, create it. Restart your editor so VS Code's git integration sees the rule.
+- [x] Sign in to your Mapbox account (you have one from Phase 1 for the basemap)
+- [x] Account → Tokens → create a new token scoped only to the Isochrones API endpoint (don't reuse the public token from Phase 1)
+- [x] Save in `backend/.env`: `MAPBOX_API_KEY=sk.your_token_here`
+- [x] Verify `.env` is in `.gitignore` (it should be from Phase 1, but check)
+- [x] If the file isn't there, create it. Restart your editor so VS Code's git integration sees the rule.
 
 ### Verify the Mapbox 60-min limit before locking presets
 
 The Mapbox Isochrones API has historically capped `contours_minutes` at 60. This affects which presets the panel can offer. Before starting Part 1 implementation:
 
-- [ ] Read the current Mapbox Isochrones API reference at https://docs.mapbox.com/api/navigation/isochrone/
-- [ ] Confirm the `contours_minutes` maximum value as of today
-- [ ] If still 60: presets are 20 / 30 / 45 / 60 (locked decision below)
-- [ ] If higher (e.g., 90 or 120): re-evaluate whether to expand presets, and update Part 3 accordingly
+- [x] Read the current Mapbox Isochrones API reference at https://docs.mapbox.com/api/navigation/isochrone/
+- [x] Confirm the `contours_minutes` maximum value as of today
+- [x] If still 60: presets are 20 / 30 / 45 / 60 (locked decision below)
+- [x] If higher (e.g., 90 or 120): re-evaluate whether to expand presets, and update Part 3 accordingly
 
 ### Locked design decisions
 

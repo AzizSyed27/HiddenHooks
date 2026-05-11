@@ -1,8 +1,14 @@
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 # Repo root (one level above backend/)
 REPO_ROOT = Path(__file__).parent.parent
+
+# Load environment variables from backend/.env if present. Idempotent and silent
+# when the file is missing, so non-Mapbox workflows (ingest, scoring) are unaffected.
+load_dotenv(REPO_ROOT / "backend" / ".env")
 
 # Raw data paths
 OHN_WATERBODY_DIR = REPO_ROOT / "phase-0-data/ohn/Ontario_Hydro_Network_(OHN)_-_Waterbody"
@@ -67,3 +73,11 @@ DATABASE_URL = os.getenv(
     "DATABASE_URL",
     "postgresql+psycopg2://hiddenhooks:hiddenhooks@localhost:5432/hiddenhooks",
 )
+
+# Mapbox Isochrones API (Phase 3, Part 1). MAPBOX_API_KEY is read here but not
+# validated at import time — services/mapbox.py raises MapboxAPIError on first
+# call if it's missing. A startup probe in backend/api/main.py is the deferred
+# Part 2 carry-forward that makes the app fail fast on uvicorn boot.
+MAPBOX_API_KEY = os.getenv("MAPBOX_API_KEY")
+MAPBOX_ISOCHRONE_URL = "https://api.mapbox.com/isochrone/v1/mapbox/driving"
+MAPBOX_HTTP_TIMEOUT_SECONDS = 5

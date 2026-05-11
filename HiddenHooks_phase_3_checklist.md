@@ -137,12 +137,12 @@ The Mapbox Isochrones API has historically capped `contours_minutes` at 60. This
 **Plan Mode prompt**: "Create `backend/services/mapbox.py`. One function: `get_drive_isochrone(lat: float, lon: float, minutes: int) -> shapely.Polygon | shapely.MultiPolygon`. Calls the Mapbox Isochrones API at `https://api.mapbox.com/isochrone/v1/mapbox/driving/{lon},{lat}` with `contours_minutes={minutes}`, `polygons=true`, `access_token={MAPBOX_API_KEY}`. Returns the parsed geometry as a Shapely shape (in EPSG:4326). Defines two custom exceptions: `MapboxAPIError` (HTTP errors, missing/invalid response shape) and `MapboxTimeoutError(MapboxAPIError)` (timeout specifically). Caller catches and decides how to surface. Do not log the API key. Show the file before generating."
 
 Verify in the plan:
-- [ ] API key read from env via `os.environ` (with a startup-time validation that it exists)
-- [ ] Request timeout configured (5s)
-- [ ] Response validation: features array exists, has at least one feature, geometry is non-empty
-- [ ] Returns `shape(features[0]['geometry'])` — Shapely handles both Polygon and MultiPolygon
-- [ ] Exception messages are informative but never include the API key
-- [ ] Module-level config (URL, timeout) is in `config.py`, not hardcoded in the service
+- [x] API key read from env via `os.environ` (with a startup-time validation that it exists)
+- [x] Request timeout configured (5s)
+- [x] Response validation: features array exists, has at least one feature, geometry is non-empty
+- [x] Returns `shape(features[0]['geometry'])` — Shapely handles both Polygon and MultiPolygon
+- [x] Exception messages are informative but never include the API key
+- [x] Module-level config (URL, timeout) is in `config.py`, not hardcoded in the service
 
 ### Verify the client manually
 
@@ -158,16 +158,16 @@ print(f'Type: {poly.geom_type}, Bounds: {poly.bounds}, Area: {poly.area:.4f}')
 "
 ```
 
-- [ ] Output shows Polygon or MultiPolygon
-- [ ] Bounds span roughly +/- 0.4 degrees from input
-- [ ] Area is non-zero
-- [ ] Test with bad API key (e.g., temporarily edit `.env` to a wrong value): expect MapboxAPIError, not a silent failure
-- [ ] Test with `minutes=99` (above cap): expect MapboxAPIError with descriptive message
+- [x] Output shows Polygon or MultiPolygon
+- [x] Bounds span roughly +/- 0.4 degrees from input
+- [x] Area is non-zero
+- [x] Test with bad API key (e.g., temporarily edit `.env` to a wrong value): expect MapboxAPIError, not a silent failure
+- [x] Test with `minutes=99` (above cap): expect MapboxAPIError with descriptive message
 
 ### Merge to main
 
-- [ ] Branch sanity check: `services/mapbox.py` exists, manual REPL test passes, `.env` is gitignored
-- [ ] Merge `phase-3/01-mapbox` to `main`
+- [x] Branch sanity check: `services/mapbox.py` exists, manual REPL test passes, `.env` is gitignored
+- [x] Merge `phase-3/01-mapbox` to `main`
 
 ---
 

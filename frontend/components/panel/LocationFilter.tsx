@@ -3,23 +3,23 @@
 import { useState } from "react"
 import { Loader2, MapPin } from "lucide-react"
 import { cn } from "@/lib/utils"
-import type { NearLocation, RadiusKm } from "@/lib/types"
+import type { NearLocation, DriveTimeMin } from "@/lib/types"
 
-const RADIUS_OPTIONS: RadiusKm[] = [30, 60, 100]
+const DRIVE_TIME_OPTIONS: DriveTimeMin[] = [20, 30, 45, 60]
 
 interface LocationFilterProps {
   nearLocation: NearLocation | null
-  radiusKm: RadiusKm | null
+  driveTimeMin: DriveTimeMin | null
   onLocationChange: (loc: NearLocation | null) => void
-  onRadiusChange: (radius: RadiusKm) => void
+  onDriveTimeChange: (minutes: DriveTimeMin) => void
   onClear: () => void
 }
 
 export default function LocationFilter({
   nearLocation,
-  radiusKm,
+  driveTimeMin,
   onLocationChange,
-  onRadiusChange,
+  onDriveTimeChange,
   onClear,
 }: LocationFilterProps) {
   const [showSetter, setShowSetter] = useState(false)
@@ -131,13 +131,13 @@ export default function LocationFilter({
         </div>
 
         <div className="flex gap-1.5">
-          {RADIUS_OPTIONS.map((km) => {
-            const active = radiusKm === km
+          {DRIVE_TIME_OPTIONS.map((min) => {
+            const active = driveTimeMin === min
             return (
               <button
-                key={km}
+                key={min}
                 onClick={() => {
-                  if (!active) onRadiusChange(km)
+                  if (!active) onDriveTimeChange(min)
                 }}
                 className={cn(
                   "rounded-full px-3 py-1 font-sans text-xs font-medium transition-colors",
@@ -146,7 +146,7 @@ export default function LocationFilter({
                     : "bg-muted text-muted-foreground hover:bg-muted/80",
                 )}
               >
-                {km} km
+                {min} min
               </button>
             )
           })}
@@ -172,7 +172,7 @@ export default function LocationFilter({
           onClick={() => setShowSetter(true)}
           className="w-full text-left font-sans text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
-          ○ Filter by distance from location
+          ○ Filter by drive time from here
         </button>
       </div>
     )

@@ -6,7 +6,7 @@ import { ChevronRight } from "lucide-react"
 import type { MapRef } from "react-map-gl/mapbox"
 import MapView from "@/components/map/MapView"
 import CandidatePanel from "@/components/panel/CandidatePanel"
-import type { CandidateCollection, Weights, NearLocation, RadiusKm } from "@/lib/types"
+import type { CandidateCollection, Weights, NearLocation, DriveTimeMin } from "@/lib/types"
 
 type Bbox = [number, number, number, number]
 
@@ -51,13 +51,13 @@ export default function Home() {
   const [fmz, setFmz] = useState<"FMZ16" | "FMZ17" | null>(null)
   const [weights, setWeights] = useState<Weights>(DEFAULT_WEIGHTS)
   const [nearLocation, setNearLocation] = useState<NearLocation | null>(null)
-  const [radiusKm, setRadiusKm] = useState<RadiusKm | null>(null)
+  const [driveTimeMin, setDriveTimeMin] = useState<DriveTimeMin | null>(null)
 
   const fetchCandidates = useCallback(async (
     currentFmz: "FMZ16" | "FMZ17" | null,
     currentWeights: Weights,
     currentLocation: NearLocation | null,
-    currentRadiusKm: RadiusKm | null,
+    currentDriveTimeMin: DriveTimeMin | null,
   ) => {
     setLoading(true)
     setError(null)
@@ -69,10 +69,10 @@ export default function Home() {
         w_e: currentWeights.w_e.toString(),
       })
       if (currentFmz) qs.set("fmz", currentFmz)
-      if (currentLocation && currentRadiusKm) {
+      if (currentLocation && currentDriveTimeMin) {
         qs.set("near_lat", currentLocation.lat.toString())
         qs.set("near_lon", currentLocation.lon.toString())
-        qs.set("radius_km", currentRadiusKm.toString())
+        qs.set("drive_time_min", currentDriveTimeMin.toString())
       }
       const res = await fetch(`${API_URL}/candidates?${qs}`)
       if (!res.ok) throw new Error(`API error ${res.status}`)
@@ -121,13 +121,13 @@ export default function Home() {
   const handleFmzChange = useCallback(
     (newFmz: "FMZ16" | "FMZ17" | null) => {
       setFmz(newFmz)
-      fetchCandidates(newFmz, weights, nearLocation, radiusKm)
-      if (!nearLocation || !radiusKm) {
+      fetchCandidates(newFmz, weights, nearLocation, driveTimeMin)
+      if (!nearLocation || !driveTimeMin) {
         const bbox = newFmz ? FMZ_BBOXES[newFmz] : FMZ_BBOXES.COMBINED
         mapRef.current?.fitBounds(bbox, { padding: 40, duration: 1200 })
       }
     },
-    [fetchCandidates, weights, nearLocation, radiusKm],
+    [fetchCandidates, weights, nearLocation, driveTimeMin],
   )
 
   const handleWeightsChange = useCallback(
@@ -135,10 +135,10 @@ export default function Home() {
       setWeights(newWeights)
       if (debounceRef.current) clearTimeout(debounceRef.current)
       debounceRef.current = setTimeout(
-        () => fetchCandidates(fmz, newWeights, nearLocation, radiusKm), 300
+        () => fetchCandidates(fmz, newWeights, nearLocation, driveTimeMin), 300
       )
     },
-    [fetchCandidates, fmz, nearLocation, radiusKm],
+    [fetchCandidates, fmz, nearLocation, driveTimeMin],
   )
 
   const handleLocationChange = useCallback(
@@ -146,26 +146,26 @@ export default function Home() {
       setNearLocation(newLoc)
       if (debounceRef.current) clearTimeout(debounceRef.current)
       debounceRef.current = setTimeout(
-        () => fetchCandidates(fmz, weights, newLoc, radiusKm), 300
+        () => fetchCandidates(fmz, weights, newLoc, driveTimeMin), 300
       )
     },
-    [fetchCandidates, fmz, weights, radiusKm],
+    [fetchCandidates, fmz, weights, driveTimeMin],
   )
 
-  const handleRadiusChange = useCallback(
-    (newRadius: RadiusKm) => {
-      setRadiusKm(newRadius)
+  const handleDriveTimeChange = useCallback(
+    (newDriveTime: DriveTimeMin) => {
+      setDriveTimeMin(newDriveTime)
       if (debounceRef.current) clearTimeout(debounceRef.current)
       debounceRef.current = setTimeout(
-        () => fetchCandidates(fmz, weights, nearLocation, newRadius), 300
+        () => fetchCandidates(fmz, weights, nearLocation, newDriveTime), 300
       )
     },
     [fetchCandidates, fmz, weights, nearLocation],
   )
 
-  const handleRadiusClear = useCallback(() => {
+  const handleClear = useCallback(() => {
     setNearLocation(null)
-    setRadiusKm(null)
+    setDriveTimeMin(null)
     fetchCandidates(fmz, weights, null, null)
     const bbox = fmz ? FMZ_BBOXES[fmz] : FMZ_BBOXES.COMBINED
     mapRef.current?.fitBounds(bbox, { padding: 40, duration: 1200 })
@@ -183,7 +183,7 @@ export default function Home() {
           <div className="rounded-lg bg-popover p-6 shadow-xl">
             <p className="text-sm text-destructive">{error}</p>
             <button
-              onClick={() => fetchCandidates(fmz, weights, nearLocation, radiusKm)}
+              onClick={() => fetchCandidates(fmz, weights, nearLocation, driveTimeMin)}
               className="mt-3 text-sm underline hover:no-underline"
             >
               Retry
@@ -212,10 +212,10 @@ export default function Home() {
             weights={weights}
             onWeightsChange={handleWeightsChange}
             nearLocation={nearLocation}
-            radiusKm={radiusKm}
+            driveTimeMin={driveTimeMin}
             onLocationChange={handleLocationChange}
-            onRadiusChange={handleRadiusChange}
-            onRadiusClear={handleRadiusClear}
+            onDriveTimeChange={handleDriveTimeChange}
+            onClear={handleClear}
           />
         )}
       </AnimatePresence>

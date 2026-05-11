@@ -9,8 +9,8 @@ import type {
   CandidateCollection,
   CandidateFeature,
   CandidateProperties,
+  DriveTimeMin,
   NearLocation,
-  RadiusKm,
   Weights,
 } from "@/lib/types"
 import CandidateDetail, { ConfidenceDot } from "./CandidateDetail"
@@ -49,10 +49,10 @@ interface CandidatePanelProps {
   weights: Weights
   onWeightsChange: (weights: Weights) => void
   nearLocation: NearLocation | null
-  radiusKm: RadiusKm | null
+  driveTimeMin: DriveTimeMin | null
   onLocationChange: (loc: NearLocation | null) => void
-  onRadiusChange: (radius: RadiusKm) => void
-  onRadiusClear: () => void
+  onDriveTimeChange: (minutes: DriveTimeMin) => void
+  onClear: () => void
 }
 
 export default function CandidatePanel({
@@ -65,10 +65,10 @@ export default function CandidatePanel({
   weights,
   onWeightsChange,
   nearLocation,
-  radiusKm,
+  driveTimeMin,
   onLocationChange,
-  onRadiusChange,
-  onRadiusClear,
+  onDriveTimeChange,
+  onClear,
 }: CandidatePanelProps) {
   const selectedFeature: CandidateFeature | null =
     selectedId != null
@@ -146,13 +146,13 @@ export default function CandidatePanel({
         ))}
       </div>
 
-      {/* Distance filter */}
+      {/* Drive-time filter */}
       <LocationFilter
         nearLocation={nearLocation}
-        radiusKm={radiusKm}
+        driveTimeMin={driveTimeMin}
         onLocationChange={onLocationChange}
-        onRadiusChange={onRadiusChange}
-        onClear={onRadiusClear}
+        onDriveTimeChange={onDriveTimeChange}
+        onClear={onClear}
       />
 
       {/* Detail card */}
@@ -165,7 +165,7 @@ export default function CandidatePanel({
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15 }}
           >
-            <CandidateDetail feature={selectedFeature} radiusKm={radiusKm} />
+            <CandidateDetail feature={selectedFeature} driveTimeMin={driveTimeMin} />
           </motion.div>
         )}
       </AnimatePresence>

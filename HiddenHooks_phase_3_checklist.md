@@ -207,26 +207,26 @@ cd backend && uvicorn api.main:app --reload --port 8000
 
 In another terminal or browser:
 
-- [ ] **Baseline (no filter)**: `GET /candidates?fmz=FMZ16` — `total_count` matches pre-Phase-3 baseline. Existing functionality unchanged.
+- [x] **Baseline (no filter)**: `GET /candidates?fmz=FMZ16` — `total_count` matches pre-Phase-3 baseline. Existing functionality unchanged.
 - [ ] **20-min filter**: `GET /candidates?near_lat=43.77&near_lon=-79.26&drive_time_min=20` — `total_count` is small (local-only). Eyeball the geometry coordinates: should all be within ~15-20km of Scarborough.
-- [ ] **30-min filter**: same as above with `drive_time_min=30`. Strictly more candidates than 20-min.
-- [ ] **45-min filter**: more again.
-- [ ] **60-min filter**: most. Coverage should reach Pickering, Whitby, into the Oak Ridges Moraine.
-- [ ] **Drive-time + FMZ filter**: `GET /candidates?fmz=FMZ16&near_lat=43.77&near_lon=-79.26&drive_time_min=45` — strict subset of `?drive_time_min=45` alone. All features have `fmz_zone='FMZ16'`.
-- [ ] **422 cases** — each must return 422 with a descriptive error:
+- [x] **30-min filter**: same as above with `drive_time_min=30`. Strictly more candidates than 20-min.
+- [x] **45-min filter**: more again.
+- [x] **60-min filter**: most. Coverage should reach Pickering, Whitby, into the Oak Ridges Moraine.
+- [x] **Drive-time + FMZ filter**: `GET /candidates?fmz=FMZ16&near_lat=43.77&near_lon=-79.26&drive_time_min=45` — strict subset of `?drive_time_min=45` alone. All features have `fmz_zone='FMZ16'`.
+- [x] **422 cases** — each must return 422 with a descriptive error:
   - `?near_lat=43.77` (missing near_lon)
   - `?near_lat=43.77&near_lon=-79.26` (missing drive_time_min)
   - `?drive_time_min=30` (no location)
   - `?near_lat=43.77&near_lon=-79.26&drive_time_min=99` (over Mapbox cap)
   - `?near_lat=51.0&near_lon=-79.26&drive_time_min=30` (lat out of Ontario range)
   - `?near_lat=43.77&near_lon=-70.0&drive_time_min=30` (lon out of Ontario range)
-- [ ] **503 case**: temporarily set `MAPBOX_API_KEY` to an invalid value, restart uvicorn, hit `?near_lat=43.77&near_lon=-79.26&drive_time_min=30`. Expect 503 with descriptive error. Restore the real key after.
-- [ ] **Empty result** (small radius in empty area): `?near_lat=42.0&near_lon=-83.0&drive_time_min=20` — returns `{"type":"FeatureCollection","features":[],"total_count":0}` cleanly.
+- [x] **503 case**: temporarily set `MAPBOX_API_KEY` to an invalid value, restart uvicorn, hit `?near_lat=43.77&near_lon=-79.26&drive_time_min=30`. Expect 503 with descriptive error. Restore the real key after.
+- [x] **Empty result** (small radius in empty area): `?near_lat=42.0&near_lon=-83.0&drive_time_min=20` — returns `{"type":"FeatureCollection","features":[],"total_count":0}` cleanly.
 
 ### Merge to main
 
-- [ ] Branch sanity check: all verification cases pass; no `radius_km` references in code or comments
-- [ ] Merge `phase-3/02-api-drive-time` to `main`
+- [x] Branch sanity check: all verification cases pass; no `radius_km` references in code or comments
+- [x] Merge `phase-3/02-api-drive-time` to `main`
 
 ---
 
@@ -249,30 +249,30 @@ All other UI behavior unchanged: location picker (geolocation, manual, Nominatim
 Show me the diff per file before generating."
 
 Verify in the plan:
-- [ ] No `radius_km` or `RadiusKm` references remaining anywhere
-- [ ] Four-pill row fits in the existing panel width (360px from Phase 2)
-- [ ] Debounce ref is still shared across weights, location, and drive-time changes (Phase 2's "latest user action wins" pattern)
-- [ ] Rank line text update propagates to all places it renders
+- [x] No `radius_km` or `RadiusKm` references remaining anywhere
+- [x] Four-pill row fits in the existing panel width (360px from Phase 2)
+- [x] Debounce ref is still shared across weights, location, and drive-time changes (Phase 2's "latest user action wins" pattern)
+- [x] Rank line text update propagates to all places it renders
 
 ### Verification
 
-- [ ] `npm run build` passes — no TypeScript errors
-- [ ] Cold load: panel shows "Filter by distance from location" button (unchanged behavior)
-- [ ] Open setter, use geolocation: shows lat/lon + accuracy (if available) + 4 drive-time pills
-- [ ] Click "20 min": pill highlights, fetch fires, URL has `drive_time_min=20`. Returned candidates visibly closer to home than 30/45/60 sets.
-- [ ] Click "30 min": refetches, URL has `drive_time_min=30`. Strict superset of 20-min.
-- [ ] Click "60 min": refetches, URL has `drive_time_min=60`. Superset.
-- [ ] Click "60 min" again (active pill): no-op, no fetch fires, pill stays selected.
-- [ ] Click "Clear filter": both location and drive-time clear, map zooms back to FMZ/COMBINED bbox, fetch unfiltered.
-- [ ] Detail card on a filtered candidate: rank line reads "Rank #N of M in FMZ X within 30 min".
-- [ ] Network tab: no remaining requests with `radius_km` in URL.
-- [ ] Rapid weight slider + drive-time pill change: only one fetch fires (shared debounceRef, latest wins).
-- [ ] FMZ change while drive-time filter is active: refetches with both filters; map stays at the candidates-bbox view (existing useEffect handles map positioning).
+- [x] `npm run build` passes — no TypeScript errors
+- [x] Cold load: panel shows "Filter by distance from location" button (unchanged behavior)
+- [x] Open setter, use geolocation: shows lat/lon + accuracy (if available) + 4 drive-time pills
+- [x] Click "20 min": pill highlights, fetch fires, URL has `drive_time_min=20`. Returned candidates visibly closer to home than 30/45/60 sets.
+- [x] Click "30 min": refetches, URL has `drive_time_min=30`. Strict superset of 20-min.
+- [x] Click "60 min": refetches, URL has `drive_time_min=60`. Superset.
+- [x] Click "60 min" again (active pill): no-op, no fetch fires, pill stays selected.
+- [x] Click "Clear filter": both location and drive-time clear, map zooms back to FMZ/COMBINED bbox, fetch unfiltered.
+- [x] Detail card on a filtered candidate: rank line reads "Rank #N of M in FMZ X within 30 min".
+- [x] Network tab: no remaining requests with `radius_km` in URL.
+- [x] Rapid weight slider + drive-time pill change: only one fetch fires (shared debounceRef, latest wins).
+- [x] FMZ change while drive-time filter is active: refetches with both filters; map stays at the candidates-bbox view (existing useEffect handles map positioning).
 
 ### Merge to main
 
-- [ ] Branch sanity check: all verification cases pass, build is clean
-- [ ] Merge `phase-3/03-frontend-drive-time` to `main`
+- [x] Branch sanity check: all verification cases pass, build is clean
+- [x] Merge `phase-3/03-frontend-drive-time` to `main`
 
 **Run the integration smoke test from Part 7 at this point**, before starting trail-graph work. Drive-time replaces radius cleanly; the trail graph and walk-time work is structurally separate. A midpoint smoke test confirms the API contract change is solid before layering more on top.
 

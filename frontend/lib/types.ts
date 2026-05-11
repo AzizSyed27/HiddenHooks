@@ -6,7 +6,7 @@ export interface NearLocation {
   accuracy?: number  // metres, from browser geolocation only
 }
 
-export type RadiusKm = 30 | 60 | 100
+export type DriveTimeMin = 20 | 30 | 45 | 60
 
 export interface Weights {
   w_h: number

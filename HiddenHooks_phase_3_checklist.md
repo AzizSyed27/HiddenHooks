@@ -192,11 +192,11 @@ No DB schema changes.
 Show me the updated handler signature, the cross-param validation block, and the SQL template diff before generating."
 
 Verify in the plan:
-- [ ] No `radius_km` references remain anywhere in the file
-- [ ] Cross-param validation order: weights, then near_lat/near_lon both-or-neither, then drive_time_min required when near_*, then drive_time_min requires near_*
-- [ ] Mapbox call happens *after* parameter validation (don't waste an API call on a request that's about to 422)
-- [ ] Isochrone polygon is constructed once per request, transformed once via `ST_Transform`, used in the GIST-indexed `ST_Within`
-- [ ] 503 includes a descriptive `detail` ("Drive-time service timeout" or "Drive-time service unavailable: ..."), never exposes the API key
+- [x] No `radius_km` references remain anywhere in the file
+- [x] Cross-param validation order: weights, then near_lat/near_lon both-or-neither, then drive_time_min required when near_*, then drive_time_min requires near_*
+- [x] Mapbox call happens *after* parameter validation (don't waste an API call on a request that's about to 422)
+- [x] Isochrone polygon is constructed once per request, transformed once via `ST_Transform`, used in the GIST-indexed `ST_Within`
+- [x] 503 includes a descriptive `detail` ("Drive-time service timeout" or "Drive-time service unavailable: ..."), never exposes the API key
 
 ### Verification
 

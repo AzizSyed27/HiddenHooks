@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import sys
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, Literal
 
@@ -11,9 +12,24 @@ from pydantic import BaseModel
 from sqlalchemy import create_engine, text
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from config import DATABASE_URL
+from config import DATABASE_URL, MAPBOX_API_KEY
+from services.mapbox import (
+    MapboxAPIError,
+    MapboxTimeoutError,
+    get_drive_isochrone,
+)
 
-app = FastAPI(title="HiddenHooks API")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if not MAPBOX_API_KEY:
+        raise RuntimeError(
+            "MAPBOX_API_KEY is missing from environment. "
+            "Set it in backend/.env before starting the API."
+        )
+    yield
+
+
+app = FastAPI(title="HiddenHooks API", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -78,8 +94,8 @@ class RegionsResponse(BaseModel):
 # SQL
 # ---------------------------------------------------------------------------
 
-# {fmz_filter} is filled at call time with either "" or "AND fmz_zone = :fmz".
-# The placeholder is hardcoded in Python — never from user input — so str.format() is safe.
+# {fmz_filter} and {isochrone_filter} are filled at call time. Both placeholders are
+# hardcoded in Python — never from user input — so str.format() is safe.
 _CANDIDATES_SQL_TEMPLATE = """
 WITH scored AS (
     SELECT
@@ -108,7 +124,7 @@ WITH scored AS (
     WHERE is_active = TRUE
       AND geom IS NOT NULL
       {fmz_filter}
-      {radius_filter}
+      {isochrone_filter}
 ),
 total AS (
     SELECT COUNT(*) AS n FROM scored
@@ -165,7 +181,7 @@ def get_candidates(
     limit: int = Query(default=2000, ge=1, le=10000),
     near_lat: float | None = Query(default=None, ge=41.0, le=50.0),
     near_lon: float | None = Query(default=None, ge=-85.0, le=-74.0),
-    radius_km: float | None = Query(default=None, ge=1.0, le=500.0),
+    drive_time_min: int | None = Query(default=None, ge=1, le=60),
 ) -> CandidateFeatureCollection:
     weight_sum = w_h + w_a + w_f + w_e
     if weight_sum <= 0:
@@ -175,17 +191,31 @@ def get_candidates(
     has_loc = (near_lat is not None) or (near_lon is not None)
     if has_loc and (near_lat is None or near_lon is None):
         raise HTTPException(status_code=422, detail="near_lat and near_lon must both be provided together")
-    if has_loc and radius_km is None:
-        raise HTTPException(status_code=422, detail="radius_km is required when near_lat/near_lon are set")
-    if radius_km is not None and not has_loc:
-        raise HTTPException(status_code=422, detail="radius_km requires near_lat and near_lon")
+    if has_loc and drive_time_min is None:
+        raise HTTPException(status_code=422, detail="drive_time_min is required when near_lat/near_lon are set")
+    if drive_time_min is not None and not has_loc:
+        raise HTTPException(status_code=422, detail="drive_time_min requires near_lat and near_lon")
+
+    isochrone_wkt: str | None = None
+    if has_loc and drive_time_min is not None:
+        assert near_lat is not None and near_lon is not None  # narrowed by has_loc check above
+        try:
+            isochrone = get_drive_isochrone(near_lat, near_lon, drive_time_min)
+        except MapboxTimeoutError:
+            raise HTTPException(status_code=503, detail="Drive-time service timed out")
+        except MapboxAPIError as exc:
+            raise HTTPException(status_code=503, detail=f"Drive-time service unavailable: {exc}")
+        isochrone_wkt = isochrone.wkt
 
     fmz_filter = "AND fmz_zone = :fmz" if fmz else ""
-    radius_filter = (
-        "AND ST_DWithin(geom, ST_Transform(ST_SetSRID(ST_MakePoint(:near_lon, :near_lat), 4326), 3161), :radius_m)"
-        if has_loc else ""
+    isochrone_filter = (
+        "AND ST_Within(geom, ST_Transform(ST_GeomFromText(:isochrone_wkt, 4326), 3161))"
+        if isochrone_wkt is not None else ""
     )
-    sql = text(_CANDIDATES_SQL_TEMPLATE.format(fmz_filter=fmz_filter, radius_filter=radius_filter))
+    sql = text(_CANDIDATES_SQL_TEMPLATE.format(
+        fmz_filter=fmz_filter,
+        isochrone_filter=isochrone_filter,
+    ))
 
     params: dict[str, Any] = {
         "w_h": w_h, "w_a": w_a, "w_f": w_f, "w_e": w_e,
@@ -193,10 +223,8 @@ def get_candidates(
     }
     if fmz:
         params["fmz"] = fmz
-    if has_loc:
-        params["near_lon"] = near_lon
-        params["near_lat"] = near_lat
-        params["radius_m"] = radius_km * 1000  # type: ignore[operator]
+    if isochrone_wkt is not None:
+        params["isochrone_wkt"] = isochrone_wkt
 
     with engine.connect() as conn:
         rows = conn.execute(sql, params).mappings().all()

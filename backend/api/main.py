@@ -9,6 +9,7 @@ from typing import Any, Literal
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from shapely.geometry import MultiPolygon, Polygon, mapping
 from sqlalchemy import create_engine, text
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -76,6 +77,7 @@ class CandidateFeatureCollection(BaseModel):
     type: Literal["FeatureCollection"] = "FeatureCollection"
     features: list[CandidateFeature]
     total_count: int  # total matching active candidates pre-LIMIT; compare with len(features) to detect truncation
+    isochrone_polygon: dict[str, Any] | None = None  # GeoJSON Polygon/MultiPolygon in EPSG:4326; null when drive_time_min not set
 
 
 class HealthResponse(BaseModel):
@@ -226,16 +228,17 @@ def get_candidates(
     if drive_time_min is not None and not has_loc:
         raise HTTPException(status_code=422, detail="drive_time_min requires near_lat and near_lon")
 
+    isochrone_polygon: Polygon | MultiPolygon | None = None
     isochrone_wkt: str | None = None
     if has_loc and drive_time_min is not None:
         assert near_lat is not None and near_lon is not None  # narrowed by has_loc check above
         try:
-            isochrone = get_drive_isochrone(near_lat, near_lon, drive_time_min)
+            isochrone_polygon = get_drive_isochrone(near_lat, near_lon, drive_time_min)
         except MapboxTimeoutError:
             raise HTTPException(status_code=503, detail="Drive-time service timed out")
         except MapboxAPIError as exc:
             raise HTTPException(status_code=503, detail=f"Drive-time service unavailable: {exc}")
-        isochrone_wkt = isochrone.wkt
+        isochrone_wkt = isochrone_polygon.wkt
 
     fmz_filter = "AND fmz_zone = :fmz" if fmz else ""
     isochrone_filter = (
@@ -289,7 +292,11 @@ def get_candidates(
         for row in rows
     ]
 
-    return CandidateFeatureCollection(features=features, total_count=total_count)
+    return CandidateFeatureCollection(
+        features=features,
+        total_count=total_count,
+        isochrone_polygon=mapping(isochrone_polygon) if isochrone_polygon is not None else None,
+    )
 
 
 @app.get("/candidates/{candidate_id}/drive-time", response_model=DriveTimeResponse)

@@ -183,3 +183,56 @@ UPDATE candidates SET name = NULL WHERE name = 'NaN';
 ```
 Verify with `SELECT COUNT(*) FROM candidates WHERE name = 'NaN';` returning 0 before
 proceeding to downstream scoring or graph operations.
+
+## Phase 3 — walk-time deferred (concluded 2026-05-12)
+
+Phase 3 ships Parts 1-3 (drive-time isochrone filter via Mapbox). Parts 4-6
+(NetworkX trail graph, walk-time endpoint, walk-time UI) are deferred to Phase 6
+pending better trail data. The investigation that drove the deferral:
+
+**Approaches tried**:
+1. NetworkX with spatial-hash snap on trail vertices; tolerance sweep 5/10/15/20 m.
+2. pgRouting `pgr_nodeNetwork` + `pgr_createTopology` at 10 m tolerance
+   (Option B from the investigation plan).
+
+**Numbers (both approaches similar)**:
+
+| Approach | Components | Largest component | Largest as % of total | Petticoat probe component |
+|---|---|---|---|---|
+| NetworkX, 5 m   | 26,705 | 9,219 nodes (every internal vertex) | ~1%  | 8-14 nodes / 120 m × 250 m |
+| NetworkX, 20 m  | 24,831 | 6,377 nodes                          | ~1%  | similar                    |
+| pgRouting, 10 m | 25,849 |   466 nodes (endpoints only)         | 0.36% | 6 nodes / 122 m × 261 m   |
+
+The two graph representations aren't directly comparable on raw node counts
+(NetworkX has every internal LineString vertex; pgRouting has endpoints only),
+but they tell the same story in component count and Petticoat behavior.
+
+**Diagnosis**: Gap distribution between unrelated OSM trail features in this
+region is concentrated at 10-30 m, not the 0-2 m intersection cluster a
+well-noded dataset would show. `pgr_nodeNetwork` did detect mid-segment
+crossings — it split 25,187 of 80,772 edges (31%) — but that fixed a different
+problem than the dominant one. The OSM data is missing structural connectivity,
+not just snap tolerance. Increasing tolerance further would either help
+marginally or start falsely merging parallel-but-separate trails.
+
+**What data would change the decision**:
+- Re-ingestion of OSM via OSMnx with preserved OSM node IDs (would replace
+  the spatial-hash dedup with real topological connectivity).
+- OTN (Ontario Trail Network) layered in alongside OSM — flagged as a candidate
+  in Phase 0; OTN preserves trail topology more reliably.
+- Manual gap-bridging in fishing areas (small-scale, high-ROI: bridge a few
+  hundred known-bad gaps near Phase 4 candidate spots).
+- pgRouting 4.x `pgr_extractVertices` (the successor to the removed
+  `pgr_createTopology`) — if pgRouting 4.x's analyze tooling improves
+  meaningfully, re-test then.
+
+**pgRouting deprecation note (Phase 6 carry-forward)**: the investigation used
+`pgr_createTopology`, which was deprecated in pgRouting 3.8 and removed in 4.0.
+If Phase 6 revives walk-time on pgRouting, the production code must use
+`pgr_extractVertices`. The Docker image `pgrouting/pgrouting:16-3.4-3.6.1` is
+kept on master so the extension is available without a rebuild; the extension
+itself is enabled in the running DB and is harmless when unused.
+
+**Preserved branches** (do not delete):
+- `phase-3/04-trail-graph` — NetworkX spatial-hash implementation (`backend/services/trail_graph.py` + lifespan integration)
+- `phase-3/04b-pgrouting-investigation` — pgRouting topology build state + diagnostic SQL

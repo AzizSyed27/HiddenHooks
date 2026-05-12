@@ -280,6 +280,14 @@ Verify in the plan:
 
 ## Part 4 — Trail graph build (3-4 hours)
 
+> **DEFERRED to Phase 6** — investigation concluded 2026-05-12 that OSM trail
+> data fragmentation prevents a useful walk-time graph at this stage. See
+> CLAUDE.md "Phase 3 — walk-time deferred (concluded 2026-05-12)" for the
+> numbers, diagnosis, and criteria that would re-open the decision. The work
+> below is preserved on branches `phase-3/04-trail-graph` (NetworkX) and
+> `phase-3/04b-pgrouting-investigation` (pgRouting). The section is kept as
+> record of what was planned; do not execute it on master.
+
 Build a routing graph from the existing OSM `trails` table, filtered to hiking-relevant classes. The graph lives in process memory, built once at API startup, used by Part 5's walk-time endpoint.
 
 This is structurally similar to Phase 2's `build_connectivity.py` for water topology — but for trails, and in memory rather than materialized in the DB.
@@ -379,6 +387,11 @@ print(f'Largest: {len(max(nx.connected_components(G), key=len)):,}')
 
 ## Part 5 — Walk-time routing endpoint (2-3 hours)
 
+> **DEFERRED to Phase 6** — depends on Part 4 trail graph, which was deferred
+> for the same reason. See the Part 4 banner above and the CLAUDE.md
+> "Phase 3 — walk-time deferred" entry for details. Section preserved as
+> record of what was planned.
+
 New endpoint that computes walk-time from the parking nearest to a candidate to the candidate itself, via Dijkstra on the trail graph from Part 4. Called by the frontend lazily when the user opens a candidate's detail card.
 
 ### Endpoint design
@@ -450,6 +463,11 @@ GET /candidates/{id}/walk-time
 
 ## Part 6 — Frontend: walk-time and total-time display (2-3 hours)
 
+> **DEFERRED to Phase 6** — depends on Part 5 walk-time endpoint, which was
+> deferred for the same reason. See the Part 4 banner and the CLAUDE.md
+> "Phase 3 — walk-time deferred" entry for details. Section preserved as
+> record of what was planned.
+
 When the user clicks a candidate's detail card, fetch and display walk-time. Add total-time framing (drive + walk) to the panel.
 
 ### Plan the detail card update
@@ -507,6 +525,12 @@ Verify in the plan:
 ---
 
 ## Part 7 — Integration smoke test (45-60 min)
+
+> **Trimmed for Phase 3 ship**: Parts 4-6 are deferred (see banners above and
+> CLAUDE.md "Phase 3 — walk-time deferred"). The walk-time line items below
+> are N/A for this Phase 3 ship and were not executed. Items that exercise
+> Parts 1-3 (drive-time filter, region selector, weights, panel UX, lifespan
+> probe) **were** executed end-to-end before tagging.
 
 Same shape as Phase 2's Part 9. Walk every UI path with intent before tagging Phase 3 complete. This is the forcing function that catches cross-layer bugs.
 

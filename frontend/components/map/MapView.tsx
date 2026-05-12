@@ -55,6 +55,20 @@ export default function MapView({
     }
   }, [driveTimeData?.route_geometry])
 
+  // Same memoization pattern for the drive-time isochrone polygon.
+  // Source: candidates.isochrone_polygon, populated by /candidates only
+  // when drive_time_min is set; otherwise null. Cleared automatically
+  // when the filter clears (next fetch returns null).
+  const isochroneFeature = useMemo(() => {
+    const poly = candidates?.isochrone_polygon
+    if (!poly) return null
+    return {
+      type: "Feature" as const,
+      geometry: poly,
+      properties: {},
+    }
+  }, [candidates?.isochrone_polygon])
+
   const highlightFilter: FilterSpecification = [
     "==", ["get", "id"], selectedId ?? -1,
   ]
@@ -110,6 +124,28 @@ export default function MapView({
           paint={{ "line-color": "#ffffff", "line-width": 2.5, "line-opacity": 0.9 }}
         />
       </Source>
+
+      {/* Isochrone polygon — translucent fill + light outline, stacked BELOW
+          candidates via beforeId="poly-fill" so candidates and the basemap
+          stay readable. Sibling layers within one source: fill first
+          (renders below), outline second (renders above the fill but still
+          below candidates). */}
+      {isochroneFeature && (
+        <Source id="isochrone" type="geojson" data={isochroneFeature}>
+          <Layer
+            id="isochrone-fill"
+            type="fill"
+            beforeId="poly-fill"
+            paint={{ "fill-color": "#94a3b8", "fill-opacity": 0.15 }}
+          />
+          <Layer
+            id="isochrone-outline"
+            type="line"
+            beforeId="poly-fill"
+            paint={{ "line-color": "#475569", "line-width": 1, "line-opacity": 0.5 }}
+          />
+        </Source>
+      )}
 
       {/* Drive route — sibling source so it stacks above candidate layers.
           Not added to interactiveLayerIds; the route is navigational signal,

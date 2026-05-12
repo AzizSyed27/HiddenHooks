@@ -268,6 +268,7 @@ export default function Home() {
         selectedId={selectedId}
         onSelect={handleSelect}
         onMapLoad={() => setMapReady(true)}
+        driveTimeData={driveTimeData}
       />
 
       <AnimatePresence>

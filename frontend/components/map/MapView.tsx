@@ -1,11 +1,11 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import Map, { Source, Layer, MapMouseEvent } from "react-map-gl/mapbox"
 import type { MapRef } from "react-map-gl/mapbox"
 import type { ExpressionSpecification, FilterSpecification } from "mapbox-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
-import type { CandidateCollection } from "@/lib/types"
+import type { CandidateCollection, DriveTimeData } from "@/lib/types"
 
 const EMPTY_FC: CandidateCollection = { type: "FeatureCollection", features: [], total_count: 0 }
 
@@ -30,6 +30,7 @@ interface MapViewProps {
   selectedId: number | null
   onSelect: (id: number | null) => void
   onMapLoad: () => void
+  driveTimeData: DriveTimeData | null
 }
 
 export default function MapView({
@@ -38,8 +39,21 @@ export default function MapView({
   selectedId,
   onSelect,
   onMapLoad,
+  driveTimeData,
 }: MapViewProps) {
   const [hovered, setHovered] = useState(false)
+
+  // Memoize the route GeoJSON so the Source `data` reference is stable
+  // until the geometry actually changes. Mapbox treats prop-reference
+  // changes as cache misses; this avoids needless layer rebuilds.
+  const routeFeature = useMemo(() => {
+    if (!driveTimeData?.route_geometry) return null
+    return {
+      type: "Feature" as const,
+      geometry: driveTimeData.route_geometry,
+      properties: {},
+    }
+  }, [driveTimeData?.route_geometry])
 
   const highlightFilter: FilterSpecification = [
     "==", ["get", "id"], selectedId ?? -1,
@@ -96,6 +110,25 @@ export default function MapView({
           paint={{ "line-color": "#ffffff", "line-width": 2.5, "line-opacity": 0.9 }}
         />
       </Source>
+
+      {/* Drive route — sibling source so it stacks above candidate layers.
+          Not added to interactiveLayerIds; the route is navigational signal,
+          not a click target. Unmounting when routeFeature is null clears the
+          layer cleanly — matches detail-card state on fetch failure too,
+          since failure leaves driveTimeData.route_geometry null. */}
+      {routeFeature && (
+        <Source id="drive-route" type="geojson" data={routeFeature}>
+          <Layer
+            id="drive-route-line"
+            type="line"
+            paint={{
+              "line-color": "#2563eb",
+              "line-width": 3.5,
+              "line-opacity": 0.9,
+            }}
+          />
+        </Source>
+      )}
     </Map>
   )
 }

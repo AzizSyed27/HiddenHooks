@@ -16,6 +16,7 @@ from config import DATABASE_URL, MAPBOX_API_KEY
 from services.mapbox import (
     MapboxAPIError,
     MapboxTimeoutError,
+    get_drive_directions,
     get_drive_isochrone,
 )
 
@@ -90,6 +91,15 @@ class RegionsResponse(BaseModel):
     regions: list[RegionInfo]
 
 
+class DriveTimeResponse(BaseModel):
+    drive_time_min: float | None
+    drive_distance_km: float | None
+    route_geometry: dict[str, Any] | None  # GeoJSON LineString, EPSG:4326
+    parking_lat: float | None
+    parking_lon: float | None
+    error: str | None
+
+
 # ---------------------------------------------------------------------------
 # SQL
 # ---------------------------------------------------------------------------
@@ -147,6 +157,26 @@ _REGIONS_SQL = text("""
     WHERE is_active = TRUE
     GROUP BY fmz_zone
     ORDER BY fmz_zone
+""")
+
+# Existence + nearest-parking in one LATERAL JOIN round-trip.
+# Three observable outcomes from the same row set:
+#   - 0 rows: candidate missing or inactive -> 404
+#   - 1 row, parking_id IS NULL: parking table empty for this candidate -> graceful no-parking
+#   - 1 row, parking_id non-null: happy path, call Mapbox
+_NEAREST_PARKING_SQL = text("""
+    SELECT
+        p.id                                          AS parking_id,
+        ST_Y(ST_Transform(ST_Centroid(p.geom), 4326)) AS parking_lat,
+        ST_X(ST_Transform(ST_Centroid(p.geom), 4326)) AS parking_lon
+    FROM candidates c
+    LEFT JOIN LATERAL (
+        SELECT id, geom
+        FROM parking
+        ORDER BY parking.geom <-> c.geom
+        LIMIT 1
+    ) p ON true
+    WHERE c.id = :candidate_id AND c.is_active = TRUE
 """)
 
 
@@ -260,3 +290,52 @@ def get_candidates(
     ]
 
     return CandidateFeatureCollection(features=features, total_count=total_count)
+
+
+@app.get("/candidates/{candidate_id}/drive-time", response_model=DriveTimeResponse)
+def get_candidate_drive_time(
+    candidate_id: int,
+    from_lat: float = Query(..., ge=41.0, le=50.0),
+    from_lon: float = Query(..., ge=-85.0, le=-74.0),
+) -> DriveTimeResponse:
+    with engine.connect() as conn:
+        row = conn.execute(
+            _NEAREST_PARKING_SQL, {"candidate_id": candidate_id}
+        ).mappings().first()
+
+    if row is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Candidate {candidate_id} not found or not active",
+        )
+
+    if row["parking_id"] is None:
+        return DriveTimeResponse(
+            drive_time_min=None,
+            drive_distance_km=None,
+            route_geometry=None,
+            parking_lat=None,
+            parking_lon=None,
+            error="No parking found near candidate",
+        )
+
+    try:
+        directions = get_drive_directions(
+            start_lat=from_lat,
+            start_lon=from_lon,
+            end_lat=row["parking_lat"],
+            end_lon=row["parking_lon"],
+        )
+    except MapboxTimeoutError:
+        raise HTTPException(status_code=503, detail="Drive-time service timed out")
+    except MapboxAPIError as exc:
+        raise HTTPException(status_code=503, detail=f"Drive-time service unavailable: {exc}")
+
+    return DriveTimeResponse(
+        drive_time_min=directions["duration_minutes"],
+        drive_distance_km=directions["distance_km"],
+        route_geometry=directions["geometry"],
+        parking_lat=row["parking_lat"],
+        parking_lon=row["parking_lon"],
+        error=None,
+    )

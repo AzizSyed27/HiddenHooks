@@ -183,3 +183,32 @@ UPDATE candidates SET name = NULL WHERE name = 'NaN';
 ```
 Verify with `SELECT COUNT(*) FROM candidates WHERE name = 'NaN';` returning 0 before
 proceeding to downstream scoring or graph operations.
+
+## Phase 3 — pgRouting trail-graph investigation (in progress)
+
+NetworkX trail graph from Part 4 is heavily fragmented (26,705 components at 5 m
+snap tolerance; largest component holds ~1% of nodes). Investigating whether
+pgRouting's `pgr_nodeNetwork` + `pgr_createTopology` produces a meaningfully
+better graph from the same OSM data.
+
+**Docker image swapped from `postgis/postgis:16-3.4` to `pgrouting/pgrouting`
+(pinned 3.6.x).** Same PostGIS base; `pgdata` volume preserved.
+
+**Deprecation carry-forward to Phase 6**: This investigation uses
+`pgr_createTopology`, which was deprecated in pgRouting 3.8 and removed in 4.0.
+If the investigation succeeds and we promote pgRouting routing to production,
+the production version must use `pgr_extractVertices` instead — `pgr_createTopology`
+is a dead end past pgRouting 3.7.x. Recorded so this isn't discovered a year from
+now during an unrelated dependency bump.
+
+**Decision thresholds for the Option B first run (10 m tolerance) — locked
+before observing numbers**:
+- Components < 5,000 → proceed to full 5/10/15/20 m tolerance sweep
+- Components 5,000–15,000 → sweep to see if tolerance matters
+- Components > 15,000 → stop, pgRouting isn't beating NetworkX baseline meaningfully,
+  the OSM data is the limit; ship Phase 3 without walk-time
+- Largest component > 50% of nodes at *any* tolerance → the data problem is solved
+  regardless; promote pgRouting to production
+
+These criteria make the post-first-run decision mechanical. Remove this block
+from CLAUDE.md once the investigation concludes.

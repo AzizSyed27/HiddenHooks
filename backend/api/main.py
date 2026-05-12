@@ -18,6 +18,7 @@ from services.mapbox import (
     MapboxTimeoutError,
     get_drive_isochrone,
 )
+from services.trail_graph import build_trail_graph
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -26,6 +27,7 @@ async def lifespan(app: FastAPI):
             "MAPBOX_API_KEY is missing from environment. "
             "Set it in backend/.env before starting the API."
         )
+    build_trail_graph(engine)
     yield
 
 

@@ -1,6 +1,6 @@
 services:
   db:
-    image: pgrouting/pgrouting:16-3.4-3.6.1
+    image: postgis/postgis:16-3.4
     container_name: hiddenhooks_db
     environment:
       POSTGRES_USER: hiddenhooks

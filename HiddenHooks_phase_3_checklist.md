@@ -333,21 +333,21 @@ Memory cost expectation: ~80k edges, NetworkX overhead in the 150-300MB range. A
 Show me the build algorithm and the spatial-hash approach before generating."
 
 Verify in the plan:
-- [x] Trail filter is exactly `highway IN ('path', 'track')`
-- [x] Spatial-hash node deduplication is explicit (not naive O(n²) deduplication)
-- [x] Edge weight is the geometric `ST_Length` of the segment, not Euclidean
-- [x] Lifespan startup registration in `main.py` is correct (FastAPI 0.93+ lifespan handler pattern)
-- [x] `find_nearest_trail_node` uses NetworkX spatial query patterns, not a brute scan
+- [ ] Trail filter is exactly `highway IN ('path', 'track')`
+- [ ] Spatial-hash node deduplication is explicit (not naive O(n²) deduplication)
+- [ ] Edge weight is the geometric `ST_Length` of the segment, not Euclidean
+- [ ] Lifespan startup registration in `main.py` is correct (FastAPI 0.93+ lifespan handler pattern)
+- [ ] `find_nearest_trail_node` uses NetworkX spatial query patterns, not a brute scan
 
 ### Verify the graph build
 
 After implementation, restart uvicorn and watch the startup logs:
 
-- [x] Startup completes in under 60s
-- [x] Memory usage of the uvicorn process stays under 600MB total (check Task Manager / `top`)
-- [x] Connected components count is reported. Many small components (>1000) means trail data is fragmented. A few large ones (10-100) means good connectivity.
-- [x] Largest component contains a meaningful fraction (>50%) of all nodes — otherwise the graph is too disconnected to route on
-- [x] Isolated nodes count is small (<5%)
+- [ ] Startup completes in under 60s
+- [ ] Memory usage of the uvicorn process stays under 600MB total (check Task Manager / `top`)
+- [ ] Connected components count is reported. Many small components (>1000) means trail data is fragmented. A few large ones (10-100) means good connectivity.
+- [ ] Largest component contains a meaningful fraction (>50%) of all nodes — otherwise the graph is too disconnected to route on
+- [ ] Isolated nodes count is small (<5%)
 
 Spot check via Python REPL:
 
@@ -368,12 +368,12 @@ print(f'Largest: {len(max(nx.connected_components(G), key=len)):,}')
 "
 ```
 
-- [x] Pick a known trail (e.g., a specific trail near Petticoat Creek you've walked) and confirm both endpoints are in the same component via `nx.has_path(G, node_a, node_b)` after looking up node IDs
+- [ ] Pick a known trail (e.g., a specific trail near Petticoat Creek you've walked) and confirm both endpoints are in the same component via `nx.has_path(G, node_a, node_b)` after looking up node IDs
 
 ### Merge to main
 
-- [x] Branch sanity check: graph builds in <60s, memory acceptable, components look sane, spot-check passes
-- [x] Merge `phase-3/04-trail-graph` to `main`
+- [ ] Branch sanity check: graph builds in <60s, memory acceptable, components look sane, spot-check passes
+- [ ] Merge `phase-3/04-trail-graph` to `main`
 
 ---
 

@@ -1,7 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import type { CandidateFeature, DriveTimeMin } from "@/lib/types"
+import type { CandidateFeature, DriveTimeData, DriveTimeMin } from "@/lib/types"
 
 export function ConfidenceDot({ confidence }: { confidence: string | null }) {
   const colors: Record<string, string> = {
@@ -55,10 +55,30 @@ function ScoreBar({ label, value, barClass }: ScoreBarProps) {
 interface CandidateDetailProps {
   feature: CandidateFeature
   driveTimeMin: DriveTimeMin | null
+  driveTimeData: DriveTimeData | null
+  driveTimeLoading: boolean
 }
 
-export default function CandidateDetail({ feature, driveTimeMin }: CandidateDetailProps) {
+export default function CandidateDetail({
+  feature,
+  driveTimeMin,
+  driveTimeData,
+  driveTimeLoading,
+}: CandidateDetailProps) {
   const p = feature.properties
+
+  // Drive-time text. Single-line so layout doesn't shift between states.
+  const driveTimeText = (() => {
+    if (driveTimeLoading) return "Computing drive time..."
+    if (driveTimeData?.error) return driveTimeData.error
+    if (
+      driveTimeData?.drive_time_min != null &&
+      driveTimeData?.drive_distance_km != null
+    ) {
+      return `Drive: ${Math.round(driveTimeData.drive_time_min)} min (${driveTimeData.drive_distance_km.toFixed(1)} km) from your location`
+    }
+    return " " // non-breaking space — reserves line height
+  })()
 
   const name =
     p.name && p.name !== "NaN"
@@ -93,6 +113,14 @@ export default function CandidateDetail({ feature, driveTimeMin }: CandidateDeta
         Rank #{p.rank.toLocaleString()} of {p.fmz_total.toLocaleString()} in {fmzLabel}
         {driveTimeMin ? ` within ${driveTimeMin} min` : ""}
       </p>
+
+      {/* Drive-time line — only when filter is active. Single-line so
+          the loading -> success transition doesn't shift layout below. */}
+      {driveTimeMin != null && (
+        <p className="mt-0.5 font-sans text-xs italic text-muted-foreground">
+          {driveTimeText}
+        </p>
+      )}
 
       {/* Size */}
       {p.candidate_type === "polygon" && p.area_m2 != null && (

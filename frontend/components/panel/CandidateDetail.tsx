@@ -1,5 +1,6 @@
 "use client"
 
+import { ExternalLink } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { CandidateFeature, DriveTimeData, DriveTimeMin } from "@/lib/types"
 
@@ -184,6 +185,21 @@ export default function CandidateDetail({
           </p>
         )}
       </div>
+
+      {/* Action row — semantically distinct from the score/info content above.
+          Universal Google Maps URL works on iOS, Android, and desktop browsers.
+          Only renders when the drive-time fetch resolved with a parking pair. */}
+      {driveTimeData?.parking_lat != null && driveTimeData?.parking_lon != null && (
+        <a
+          href={`https://www.google.com/maps/dir/?api=1&destination=${driveTimeData.parking_lat},${driveTimeData.parking_lon}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-md bg-foreground/90 px-3 py-2 font-sans text-xs font-medium text-background transition-colors hover:bg-foreground"
+        >
+          <ExternalLink size={12} />
+          Get directions to parking
+        </a>
+      )}
     </div>
   )
 }

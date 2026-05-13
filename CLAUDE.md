@@ -236,3 +236,25 @@ itself is enabled in the running DB and is harmless when unused.
 **Preserved branches** (do not delete):
 - `phase-3/04-trail-graph` — NetworkX spatial-hash implementation (`backend/services/trail_graph.py` + lifespan integration)
 - `phase-3/04b-pgrouting-investigation` — pgRouting topology build state + diagnostic SQL
+
+## Phase 3 — drive-routing (added 2026-05-12)
+
+Replacement scope for the deferred walk-time work. Sibling note to
+"Phase 3 — walk-time deferred" — these are distinct features. Drive-routing
+fills the actionability gap walk-time was meant to fill (moving the detail
+card from "within 30 min" — the isochrone cap — to "Drive: 23 min (18.3 km)"
+with the actual route visible on the map). Lands on branch
+`phase-3/04c-drive-routing` as seven pieces.
+
+**What it adds**:
+- `backend/services/mapbox.py`: `get_drive_directions(start_lat, start_lon, end_lat, end_lon)` — Mapbox Directions API client. Same exception classes (`MapboxAPIError`, `MapboxTimeoutError`), same token hygiene as `get_drive_isochrone` (token in `params=`, never URL; no `str(exc)`; 200-char response snippet limit).
+- `backend/api/main.py`: `GET /candidates/{candidate_id}/drive-time?from_lat=X&from_lon=Y` — returns drive_time_min, drive_distance_km, route_geometry, parking_lat, parking_lon, error. Single LATERAL JOIN combines existence check and nearest-parking lookup; 0 rows → 404, 1 row with `parking_id IS NULL` → graceful "No parking found" 200, 1 row with values → Mapbox call.
+- `backend/api/main.py`: `CandidateFeatureCollection` gains optional `isochrone_polygon` field — already-computed isochrone serialized as GeoJSON Polygon/MultiPolygon in EPSG:4326. No extra Mapbox call.
+- `frontend/lib/types.ts`: `DriveTimeData` interface mirroring the backend response; `isochrone_polygon` slot on `CandidateCollection`.
+- `frontend/app/page.tsx`: drive-time fetch effect on `[selectedId, nearLocation, driveTimeMin]`. AbortController guards every then/catch/finally with `signal.aborted` checks so the response that paints is always the response for the currently-selected candidate.
+- `frontend/components/panel/CandidateDetail.tsx`: drive-time text line under the rank line ("Drive: X min (Y km) from your location" / "Computing drive time..." / error text). "Get directions to parking" anchor at the bottom of the card (universal Google Maps URL, opens in new tab).
+- `frontend/components/map/MapView.tsx`: route line as a blue `#2563eb` 3.5px layer above the candidate fills (NOT in `interactiveLayerIds`). Isochrone polygon as a translucent slate fill (15%) + slate-600 outline (50%), both via `beforeId="poly-fill"` so they stack below candidates.
+
+**Lazy-fetch + abort-on-change**: drive-time is per-candidate-selection. A list-render fetch would blow the Mapbox 100k/month free tier; selection-only keeps the call count proportional to user attention. `driveTimeAbortRef` is a `useRef<AbortController>` separate from the existing `debounceRef` (debounce is for input changes, abort is for stale-response prevention).
+
+**Failure path is unified**: a fetch failure leaves `driveTimeData.route_geometry === null` and `driveTimeData.parking_lat === null`. The map's conditional render therefore draws no route, and the directions button does not render. Map state and detail card state stay in sync without separate cleanup logic.

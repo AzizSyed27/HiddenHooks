@@ -527,10 +527,14 @@ Verify in the plan:
 ## Part 7 — Integration smoke test (45-60 min)
 
 > **Trimmed for Phase 3 ship**: Parts 4-6 are deferred (see banners above and
-> CLAUDE.md "Phase 3 — walk-time deferred"). The walk-time line items below
-> are N/A for this Phase 3 ship and were not executed. Items that exercise
-> Parts 1-3 (drive-time filter, region selector, weights, panel UX, lifespan
-> probe) **were** executed end-to-end before tagging.
+> CLAUDE.md "Phase 3 — walk-time deferred"). The walk-time line items in
+> Manual smoke below are N/A for this Phase 3 ship and were not executed.
+> Items that exercise Parts 1-3 (drive-time filter, region selector,
+> weights, panel UX, lifespan probe) **were** executed end-to-end.
+> Drive-routing (added 2026-05-12 on branch `phase-3/04c-drive-routing` as
+> replacement scope for walk-time — see CLAUDE.md "Phase 3 — drive-routing")
+> gets its own "Drive-routing smoke test" subsection below; those items
+> **are** part of the Phase 3 ship and must pass before tagging.
 
 Same shape as Phase 2's Part 9. Walk every UI path with intent before tagging Phase 3 complete. This is the forcing function that catches cross-layer bugs.
 
@@ -582,13 +586,31 @@ Walk through every checkbox. Don't rush — bugs you skip here cost more later.
 - [ ] Frontend feels responsive; no UI freezes during weight slider drag or drive-time pill clicks
 - [ ] After 30 minutes of use, uvicorn process memory hasn't grown (graph stays in memory but doesn't leak)
 
+### Drive-routing smoke test (added 2026-05-12, branch `phase-3/04c-drive-routing`)
+
+Pieces 1–7 of drive-routing. Run after the Manual smoke above. Walk-time
+items in Manual smoke remain N/A; these replace them.
+
+- [ ] No filter active, click candidate: detail card opens with scores; no drive-time line, no route on map, no isochrone fill, no "Get directions" button.
+- [ ] Set location (Scarborough manual entry, 43.77, -79.26), click `20 min` pill: translucent slate isochrone polygon fills around the bbox of the 20-min drive; candidate set shrinks to those inside the polygon.
+- [ ] Click a candidate inside the isochrone: detail card briefly shows "Computing drive time..." (italic, single line), then "Drive: X min (Y km) from your location"; blue route line draws from the chosen location to the candidate's nearest parking, rendered ABOVE candidate fills (route is not clickable — see below).
+- [ ] "Get directions to parking" button appears at the bottom of the card. Click it: new tab opens to `https://www.google.com/maps/dir/?api=1&destination={lat},{lon}` with the parking coordinates.
+- [ ] Click a different candidate rapidly while previous fetch is in flight: route + drive-time text + directions button clear immediately, then re-render with the NEW candidate's data. No flicker of stale data.
+- [ ] Switch from `20 min` to `60 min` pill: isochrone polygon grows; `/candidates` refetches with the new polygon; more candidates appear; the selected candidate's drive-time refreshes (or persists if same candidate is still selected).
+- [ ] Click directly on the blue route line: route is NOT in `interactiveLayerIds` — click should pass through to whatever is below (e.g., a candidate fill underneath gets selected, or click is a no-op).
+- [ ] Click "Clear filter": isochrone fill, route line, drive-time text, and directions button all clear in one render cycle. Map zooms back to FMZ/COMBINED.
+- [ ] Performance: `/candidates/{id}/drive-time` response in under 1 s for typical Scarborough-area candidate (Mapbox latency + one LATERAL JOIN; should be ~200–500 ms).
+- [ ] Console clean: no React key warnings, no Mapbox layer-already-exists warnings, no AbortError logs.
+
 ### Failure-mode smoke
 
 - [ ] Set `MAPBOX_API_KEY` to invalid temporarily, restart uvicorn:
   - `/candidates?near_lat=43.77&near_lon=-79.26&drive_time_min=30` returns 503 with descriptive error
-  - Frontend handles 503 gracefully (error banner, last result preserved or cleared depending on existing pattern)
+  - `/candidates/{id}/drive-time?from_lat=43.77&from_lon=-79.26` also returns 503 with descriptive error
+  - Frontend handles both 503s gracefully: filter-fetch error banner appears; drive-time card shows the error in italics where the "Drive: ..." line would be; no route renders; no directions button renders
   - Restore key and verify recovery
-- [ ] Stop the trail graph service somehow (e.g., temporarily break the lifespan import): `/candidates/{id}/walk-time` returns 5xx with descriptive error. Restore.
+- [ ] `/candidates/999999999/drive-time?from_lat=43.77&from_lon=-79.26` returns 404 with `"Candidate 999999999 not found or not active"`.
+- [ ] Stop the trail graph service somehow (e.g., temporarily break the lifespan import): `/candidates/{id}/walk-time` returns 5xx with descriptive error. **Walk-time deferred (Phase 6) — this item is N/A for the Phase 3 ship**; left in place as a Phase 6 reactivation checkpoint.
 
 ### Definition of done
 

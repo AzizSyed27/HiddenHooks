@@ -80,4 +80,5 @@ DATABASE_URL = os.getenv(
 # Part 2 carry-forward that makes the app fail fast on uvicorn boot.
 MAPBOX_API_KEY = os.getenv("MAPBOX_API_KEY")
 MAPBOX_ISOCHRONE_URL = "https://api.mapbox.com/isochrone/v1/mapbox/driving"
+MAPBOX_DIRECTIONS_URL = "https://api.mapbox.com/directions/v5/mapbox/driving"
 MAPBOX_HTTP_TIMEOUT_SECONDS = 5

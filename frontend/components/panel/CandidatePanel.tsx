@@ -9,6 +9,7 @@ import type {
   CandidateCollection,
   CandidateFeature,
   CandidateProperties,
+  DriveTimeData,
   DriveTimeMin,
   NearLocation,
   Weights,
@@ -53,6 +54,8 @@ interface CandidatePanelProps {
   onLocationChange: (loc: NearLocation | null) => void
   onDriveTimeChange: (minutes: DriveTimeMin) => void
   onClear: () => void
+  driveTimeData: DriveTimeData | null
+  driveTimeLoading: boolean
 }
 
 export default function CandidatePanel({
@@ -69,6 +72,8 @@ export default function CandidatePanel({
   onLocationChange,
   onDriveTimeChange,
   onClear,
+  driveTimeData,
+  driveTimeLoading,
 }: CandidatePanelProps) {
   const selectedFeature: CandidateFeature | null =
     selectedId != null
@@ -165,7 +170,12 @@ export default function CandidatePanel({
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15 }}
           >
-            <CandidateDetail feature={selectedFeature} driveTimeMin={driveTimeMin} />
+            <CandidateDetail
+              feature={selectedFeature}
+              driveTimeMin={driveTimeMin}
+              driveTimeData={driveTimeData}
+              driveTimeLoading={driveTimeLoading}
+            />
           </motion.div>
         )}
       </AnimatePresence>

@@ -6,7 +6,7 @@ import { ChevronRight } from "lucide-react"
 import type { MapRef } from "react-map-gl/mapbox"
 import MapView from "@/components/map/MapView"
 import CandidatePanel from "@/components/panel/CandidatePanel"
-import type { CandidateCollection, Weights, NearLocation, DriveTimeMin } from "@/lib/types"
+import type { CandidateCollection, Weights, NearLocation, DriveTimeMin, DriveTimeData } from "@/lib/types"
 
 type Bbox = [number, number, number, number]
 
@@ -52,6 +52,9 @@ export default function Home() {
   const [weights, setWeights] = useState<Weights>(DEFAULT_WEIGHTS)
   const [nearLocation, setNearLocation] = useState<NearLocation | null>(null)
   const [driveTimeMin, setDriveTimeMin] = useState<DriveTimeMin | null>(null)
+  const [driveTimeData, setDriveTimeData] = useState<DriveTimeData | null>(null)
+  const [driveTimeLoading, setDriveTimeLoading] = useState(false)
+  const driveTimeAbortRef = useRef<AbortController | null>(null)
 
   const fetchCandidates = useCallback(async (
     currentFmz: "FMZ16" | "FMZ17" | null,
@@ -87,6 +90,73 @@ export default function Home() {
   useEffect(() => {
     fetchCandidates(null, DEFAULT_WEIGHTS, null, null)
   }, [fetchCandidates])
+
+  // Drive-time fetch: lazy, on candidate selection, only when filter is active.
+  // Aborts in-flight fetch on selection change so the response that paints is
+  // always the response for the currently-selected candidate.
+  useEffect(() => {
+    if (selectedId == null || nearLocation == null || driveTimeMin == null) {
+      setDriveTimeData(null)
+      setDriveTimeLoading(false)
+      driveTimeAbortRef.current?.abort()
+      driveTimeAbortRef.current = null
+      return
+    }
+
+    driveTimeAbortRef.current?.abort()
+    const controller = new AbortController()
+    driveTimeAbortRef.current = controller
+
+    setDriveTimeLoading(true)
+    setDriveTimeData(null)
+
+    const qs = new URLSearchParams({
+      from_lat: nearLocation.lat.toString(),
+      from_lon: nearLocation.lon.toString(),
+    })
+
+    fetch(`${API_URL}/candidates/${selectedId}/drive-time?${qs}`, {
+      signal: controller.signal,
+    })
+      .then(async (res) => {
+        if (controller.signal.aborted) return
+        if (!res.ok) {
+          const body = await res.json().catch(() => null)
+          setDriveTimeData({
+            drive_time_min: null,
+            drive_distance_km: null,
+            route_geometry: null,
+            parking_lat: null,
+            parking_lon: null,
+            error: body?.detail ?? `Failed to load drive time (${res.status})`,
+          })
+          return
+        }
+        const data = (await res.json()) as DriveTimeData
+        if (controller.signal.aborted) return
+        setDriveTimeData(data)
+      })
+      .catch((err) => {
+        if (controller.signal.aborted) return
+        if ((err as Error).name === "AbortError") return
+        setDriveTimeData({
+          drive_time_min: null,
+          drive_distance_km: null,
+          route_geometry: null,
+          parking_lat: null,
+          parking_lon: null,
+          error: "Failed to load drive time",
+        })
+      })
+      .finally(() => {
+        if (controller.signal.aborted) return
+        setDriveTimeLoading(false)
+      })
+
+    return () => {
+      controller.abort()
+    }
+  }, [selectedId, nearLocation, driveTimeMin])
 
   // Fit the viewport to the full candidate set once both map and data are ready.
   useEffect(() => {
@@ -198,6 +268,7 @@ export default function Home() {
         selectedId={selectedId}
         onSelect={handleSelect}
         onMapLoad={() => setMapReady(true)}
+        driveTimeData={driveTimeData}
       />
 
       <AnimatePresence>
@@ -216,6 +287,8 @@ export default function Home() {
             onLocationChange={handleLocationChange}
             onDriveTimeChange={handleDriveTimeChange}
             onClear={handleClear}
+            driveTimeData={driveTimeData}
+            driveTimeLoading={driveTimeLoading}
           />
         )}
       </AnimatePresence>

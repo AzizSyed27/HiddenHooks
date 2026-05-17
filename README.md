@@ -7,8 +7,7 @@ bodies and stream reaches by a multi-component score. Built as a personal / port
 
 ---
 
-## Current phase: Phase 2 — Full scoring pipeline
-
+## Current phase: Phase 5 — Multi LLM Agent advising with advanced reasoning and communication between each other
 Coverage: **FMZ 16 and FMZ 17** (southern and central Ontario).
 
 Four scoring components, each weighted independently per query:

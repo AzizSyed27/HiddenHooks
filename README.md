@@ -7,6 +7,7 @@ bodies and stream reaches by a multi-component score. Built as a personal projec
 
 ---
 <img width="1919" height="954" alt="image" src="https://github.com/user-attachments/assets/ce267fda-692d-44f6-a559-2bcdb7349305" />
+
 ---
 
 ## Current phase: Phase 5 — Multi LLM Agent advising with advanced reasoning and communication between each other

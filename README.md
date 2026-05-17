@@ -3,8 +3,10 @@
 A geospatial tool for finding under-fished water bodies in Ontario. Pulls hydrology
 data from the Ontario Hydro Network (OHN), road and trail network from OpenStreetMap,
 fish survey data from the Ontario Aquatic Resource Areas (ARA) dataset, and ranks water
-bodies and stream reaches by a multi-component score. Built as a personal / portfolio project.
+bodies and stream reaches by a multi-component score. Built as a personal project.
 
+---
+<img width="1919" height="954" alt="image" src="https://github.com/user-attachments/assets/ce267fda-692d-44f6-a559-2bcdb7349305" />
 ---
 
 ## Current phase: Phase 5 — Multi LLM Agent advising with advanced reasoning and communication between each other

@@ -13,18 +13,24 @@ into a scored ranking. Personal/portfolio project.
 - Tailwind CSS 4 + shadcn/ui — installed components: button, card, badge, sheet
 - Framer Motion 12, Lucide React
 - Fonts: Poppins (`--font-sans`, UI chrome) and Lora (`--font-serif`, candidate names)
-- Anthropic API (Claude) for the multi-agent reasoning layer (later phases)
+- Anthropic API (Claude) for the multi-agent reasoning layer (Phase 5 — in progress)
+- Open-Meteo free weather API — forecast + ERA5 historical, no auth required
 
 ## Ports (local dev)
 - PostgreSQL: 5432 (Docker)
 - FastAPI: 8000 (`python -m uvicorn api.main:app --port 8000` from `backend/`)
 - Next.js: 3000 (`npm run dev` from `frontend/`)
 
-## Current phase: Phase 2 — in progress
+## Current phase: Phase 5 — multi-agent reasoning layer (in progress)
 Region: FMZ 16 and FMZ 17 (full Ontario management zones; replaces the Phase 1 test
 region of ~20 km around Rouge National Urban Park, Scarborough, ON).
 Four scoring components: H (hiddenness), A (accessibility), F (fish potential), E (ecology).
 Composite and per-FMZ rank are computed at query time by the API.
+Phase 3 added Mapbox drive-time isochrone filter and per-candidate drive routing.
+Phase 5 adds a multi-agent reasoning layer (Weather, Timing/Pressure, Species specialists
++ Coordinator) on top of Phase 2 scoring. Two new endpoints: `POST /agents/rerank` and
+`POST /agents/trip-plan`. On-demand only, opt-in via UI buttons. Agents never fire
+automatically on panel refresh.
 
 ## Key files
 
@@ -40,19 +46,30 @@ Composite and per-FMZ rank are computed at query time by the API.
 ### Phase 2 — added
 | File | Purpose |
 |---|---|
-| `backend/scoring/snap_ara_to_candidates.py` | Snaps ARA survey points to nearest candidate geometry; populates join table |
-| `backend/scoring/build_connectivity.py` | Builds NetworkX reach graph spanning both FMZs; writes `candidate_edges` |
+| `backend/processing/snap_ara_to_candidates.py` | Snaps ARA survey points to nearest candidate geometry; populates join table |
+| `backend/processing/build_connectivity.py` | Builds NetworkX reach graph spanning both FMZs; writes `candidate_edges` |
 | `backend/scoring/score_hiddenness.py` | Normalises `dist_to_road_meters` → `h_score` (0–1, higher = more hidden) |
 | `backend/scoring/score_accessibility.py` | Trail + parking proximity → `a_score` |
 | `backend/scoring/score_fish_potential.py` | ARA BFS propagation → `f_score`, `f_confidence`, `f_species` |
 | `backend/scoring/score_ecology.py` | Habitat/connectivity bonus → `e_score` |
 | `backend/api/main.py` | `GET /health`, `GET /regions`, `GET /candidates` (weights, fmz, radius filter) |
-| `frontend/lib/types.ts` | Shared TS types including `Weights`, `NearLocation`, `RadiusKm` |
-| `frontend/app/page.tsx` | Orchestrator: state (fmz, weights, nearLocation, radiusKm), all handlers |
+| `frontend/lib/types.ts` | Shared TS types including `Weights`, `NearLocation`, `DriveTimeMin`, `DriveTimeData` |
+| `frontend/app/page.tsx` | Orchestrator: state (fmz, weights, nearLocation, driveTimeMin), all handlers |
 | `frontend/components/map/MapView.tsx` | Map layers; composite drives color via interpolate expression |
 | `frontend/components/panel/CandidatePanel.tsx` | Panel with region selector, weight sliders, LocationFilter, detail card, ranked list |
 | `frontend/components/panel/CandidateDetail.tsx` | Score bars (H/A/F/E + composite), confidence badge, raw inputs |
 | `frontend/components/panel/LocationFilter.tsx` | Three-state location filter: off / setter (geo+manual+Nominatim) / active |
+
+### Phase 3 — added
+| File | Purpose |
+|---|---|
+| `backend/services/mapbox.py` | `get_drive_isochrone` (filter polygon) + `get_drive_directions` (route to parking); `MapboxAPIError`, `MapboxTimeoutError` |
+| `backend/api/main.py` | Added `GET /candidates/{id}/drive-time?from_lat&from_lon`; `CandidateFeatureCollection` gains `isochrone_polygon` |
+
+### Phase 5 — added
+| File | Purpose |
+|---|---|
+| `backend/services/weather.py` | `get_weather_context(lat, lon)` — Open-Meteo forecast + ERA5 historical; `WeatherAPIError`, `WeatherTimeoutError`; dual in-memory cache (1h forecast TTL, 24h historical TTL) |
 
 ## Established conventions and gotchas
 
@@ -98,9 +115,10 @@ Composite and per-FMZ rank are computed at query time by the API.
   LIMIT so fmz_total is accurate regardless of the response limit.
 - `total_count` on the FeatureCollection is the pre-LIMIT matching count (cross-joined
   from a `total AS (SELECT COUNT(*) FROM scored)` CTE).
-- Radius filter: `near_lat`, `near_lon`, `radius_km` must all be provided together or
-  not at all. Uses `ST_DWithin` with the stored EPSG:3161 geometry — no index needed
-  beyond the existing GiST index.
+- Drive-time filter: `near_lat`, `near_lon`, `drive_time_min` must all be provided together
+  or not at all. Filter is a Mapbox isochrone polygon; candidates are filtered by
+  `ST_Within(geom, ST_Transform(isochrone, 3161))`. Replaced the Phase 2 `radius_km` /
+  `ST_DWithin` approach in Phase 3.
 - `normalizedRank` no longer exists — `composite` (0–1 float) is used directly for
   both map coloring and panel badge colors.
 - SQL fragments `{fmz_filter}` and `{radius_filter}` are formatted in Python, not
@@ -118,21 +136,21 @@ Composite and per-FMZ rank are computed at query time by the API.
 - In React 19, `useRef<T>(null)` returns `RefObject<T | null>`. Prop types for refs
   should be `React.RefObject<T | null>`, not `React.RefObject<T>`.
 - **Single `debounceRef`** is shared across `handleWeightsChange`, `handleLocationChange`,
-  and `handleRadiusChange`. Whichever fires last wins — no concurrent fetches.
+  and `handleDriveTimeChange`. Whichever fires last wins — no concurrent fetches.
 - `handleLocationChange` and `handleRadiusChange` do **not** call `fitBounds`.
   The existing `useEffect([candidates, mapReady])` fires after every fetch and zooms
   to the returned candidates' bounding box — the correct view. Adding a pre-fetch
   fitBounds would race with this.
-- `handleFmzChange` calls `fitBounds` to the FMZ bbox only when no radius filter is
-  active (`!nearLocation || !radiusKm`). If filter is active, candidates useEffect
+- `handleFmzChange` calls `fitBounds` to the FMZ bbox only when no drive-time filter is
+  active (`!nearLocation || !driveTimeMin`). If filter is active, candidates useEffect
   handles positioning.
 - Weight slider `min` is `0.01` (not `0`) — prevents all-zero weight state that
   would send sum=0 to the API and return 422.
 - `FMZ_BBOXES` in `page.tsx` are hardcoded for v1 — should eventually be derived
   from `GET /regions` once that endpoint exposes bboxes.
-- Active radius pill click is a **no-op** — pills do not toggle off. "Clear filter"
+- Active drive-time pill click is a **no-op** — pills do not toggle off. "Clear filter"
   is the only deactivation path. This avoids the confusing state where location is
-  set but radius is null (which sends no radius param despite the filter appearing active).
+  set but drive_time_min is null (which sends no filter param despite the filter appearing active).
 - `NearLocation.accuracy` (metres, browser geolocation only) is displayed as `±N km`
   in the panel. Highlighted orange if accuracy > 1000 m.
 

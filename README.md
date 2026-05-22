@@ -10,7 +10,7 @@ bodies and stream reaches by a multi-component score. Built as a personal projec
 
 ---
 
-## Current phase: Phase 5 — Multi LLM Agent advising with advanced reasoning and communication between each other
+## Current phase: Phase 5 — Multi-agent reasoning layer (in progress)
 Coverage: **FMZ 16 and FMZ 17** (southern and central Ontario).
 
 Four scoring components, each weighted independently per query:
@@ -23,7 +23,7 @@ Four scoring components, each weighted independently per query:
 | Ecology bonus | E | Habitat quality and connectivity through the reach network |
 
 Weights are tunable from the panel. The composite score drives map color and per-FMZ rank.
-A radius filter lets you limit candidates to within 30, 60, or 100 km of a chosen location.
+A drive-time filter (Mapbox isochrone) limits candidates to within 30, 60, or 90 minutes from a chosen location. Selecting a candidate shows drive time, distance, and route to nearest parking.
 
 ---
 
@@ -37,7 +37,8 @@ A radius filter lets you limit candidates to within 30, 60, or 100 km of a chose
 | Map | Mapbox GL JS via react-map-gl, custom basemap style |
 | UI | shadcn/ui, Tailwind CSS 4, Framer Motion, Lucide icons |
 | Fonts | Poppins (UI chrome), Lora (candidate names) |
-| AI layer | Anthropic API — planned for a later phase |
+| AI layer | Anthropic API (Claude) — multi-agent orchestration, Phase 5 |
+| Weather | Open-Meteo free API — forecast + ERA5 historical, no auth |
 
 ---
 
@@ -49,6 +50,14 @@ A radius filter lets you limit candidates to within 30, 60, or 100 km of a chose
 - Python 3.11+ (conda environment: `hiddenhooks`)
 - Node.js 20+
 - A Mapbox account — access token and a custom style URL
+- An Anthropic API key (Phase 5 agent endpoints)
+
+Create `backend/.env` with:
+
+```
+MAPBOX_API_KEY=pk.your_token_here
+ANTHROPIC_API_KEY=sk-ant-your_key_here
+```
 
 ### 1. Start the database
 
@@ -88,12 +97,12 @@ python -m ingest.roads             # downloads OSM road network, caches to cache
 > After each waterbody or watercourse ingest, run:
 > `UPDATE candidates SET name = NULL WHERE name = 'NaN';`
 
-### 4. Run scoring scripts
+### 4. Run processing and scoring scripts
 
 ```bash
-python -m scoring.dist_to_road          # ~8 min — populates h_score proxy
-python -m scoring.snap_ara_to_candidates
-python -m scoring.build_connectivity
+python -m scoring.dist_to_road              # ~8 min — populates h_score proxy
+python -m processing.snap_ara_to_candidates
+python -m processing.build_connectivity
 python -m scoring.score_hiddenness
 python -m scoring.score_accessibility
 python -m scoring.score_fish_potential
@@ -113,7 +122,9 @@ Endpoints:
 - `GET /health` — liveness check
 - `GET /regions` — list FMZ zones with candidate counts
 - `GET /candidates` — scored GeoJSON with optional `fmz`, `w_h/w_a/w_f/w_e` weights,
-  and `near_lat`/`near_lon`/`radius_km` radius filter
+  and `near_lat`/`near_lon`/`drive_time_min` drive-time filter
+- `GET /candidates/{id}/drive-time?from_lat=X&from_lon=Y` — Mapbox-routed drive time,
+  distance, and route geometry to nearest parking for a selected candidate
 
 ### 6. Configure frontend environment
 
@@ -145,11 +156,13 @@ docker/
   initdb/                    schema SQL applied on first container start
 
 backend/
-  config.py                  centralised paths + DATABASE_URL
-  ingest/                    OHN waterbody, watercourse, OSM roads, ARA
+  config.py                  centralised paths + DATABASE_URL + API constants
+  ingest/                    OHN waterbody, watercourse, OSM roads, ARA, regions
+  processing/                snap_ara_to_candidates, build_connectivity, segment_reaches
   scoring/                   dist_to_road, hiddenness, accessibility,
-                             fish_potential, ecology, snap_ara, connectivity
-  api/                       FastAPI app — /health, /regions, /candidates
+                             fish_potential, ecology
+  services/                  mapbox.py (isochrone + directions), weather.py (Open-Meteo)
+  api/                       FastAPI app — /health, /regions, /candidates, /drive-time
 
 frontend/
   app/                       Next.js App Router pages

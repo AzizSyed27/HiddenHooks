@@ -142,12 +142,12 @@ For historical:
 
 ### Verify in the plan
 
-- [ ] Cache keys are coarsened to ~1km (round to 2 decimal places); not at full lat/lon precision
-- [ ] Cache TTL differs for forecast (1 hr) vs historical (24 hr) data
-- [ ] Two endpoints (forecast vs archive) are used appropriately
-- [ ] Exception handling parallels `services/mapbox.py` patterns
-- [ ] Returned dict has explicit schema (not raw Open-Meteo response)
-- [ ] Timezone is `America/Toronto` so day-of-week and time-of-day computations are local
+- [x] Cache keys are coarsened to ~1km (round to 2 decimal places); not at full lat/lon precision
+- [x] Cache TTL differs for forecast (1 hr) vs historical (24 hr) data
+- [x] Two endpoints (forecast vs archive) are used appropriately
+- [x] Exception handling parallels `services/mapbox.py` patterns
+- [x] Returned dict has explicit schema (not raw Open-Meteo response)
+- [x] Timezone is `America/Toronto` so day-of-week and time-of-day computations are local
 
 ### Verification
 

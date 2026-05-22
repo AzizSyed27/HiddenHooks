@@ -82,3 +82,13 @@ MAPBOX_API_KEY = os.getenv("MAPBOX_API_KEY")
 MAPBOX_ISOCHRONE_URL = "https://api.mapbox.com/isochrone/v1/mapbox/driving"
 MAPBOX_DIRECTIONS_URL = "https://api.mapbox.com/directions/v5/mapbox/driving"
 MAPBOX_HTTP_TIMEOUT_SECONDS = 5
+
+# Open-Meteo weather APIs (Phase 5, Part 1). No auth key required.
+# Forecast endpoint: current conditions + 48-hour hourly + 2-day daily.
+# Archive endpoint: ERA5 reanalysis (~5-day publication lag; historical_7d
+#   may return fewer than 7 items — callers must not assume exactly 7).
+# 10s timeout (vs Mapbox's 5s): Open-Meteo is free-tier infrastructure with
+#   a looser SLA; 5s leaves insufficient headroom for cold response times.
+OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
+OPEN_METEO_ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
+OPEN_METEO_HTTP_TIMEOUT_SECONDS = 10

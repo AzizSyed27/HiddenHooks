@@ -209,10 +209,10 @@ Some agent inputs are computed from `datetime.now()` rather than fetched from ex
 
 ### Verify in the plan
 
-- [ ] All functions accept optional `dt` for testability
-- [ ] Default behavior uses `zoneinfo.ZoneInfo("America/Toronto")` (stdlib timezone, not pytz)
-- [ ] Season boundaries are explicit constants, not magic strings
-- [ ] Time-of-day boundaries are explicit and don't overlap
+- [x] All functions accept optional `dt` for testability
+- [x] Default behavior uses `zoneinfo.ZoneInfo("America/Toronto")` (stdlib timezone, not pytz)
+- [x] Season boundaries are explicit constants, not magic strings
+- [x] Time-of-day boundaries are explicit and don't overlap
 
 ### Verification
 

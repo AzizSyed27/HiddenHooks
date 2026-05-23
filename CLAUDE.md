@@ -70,6 +70,9 @@ automatically on panel refresh.
 | File | Purpose |
 |---|---|
 | `backend/services/weather.py` | `get_weather_context(lat, lon)` — Open-Meteo forecast + ERA5 historical; `WeatherAPIError`, `WeatherTimeoutError`; dual in-memory cache (1h forecast TTL, 24h historical TTL) |
+| `backend/services/conditions.py` | `get_day_category`, `get_season`, `get_time_of_day`, `get_all_conditions` — pure stdlib datetime classifiers; naive datetimes treated as Toronto local |
+
+**Phase 5 Part 2 deviation**: time-of-day boundaries deviate from the checklist by design — fishing-context boundaries aligned with Ontario seasonal light, not office hours (dawn 05:00, morning 07:00, midday 12:00, evening 16:00, dusk 18:00, night 21:00).
 
 ## Established conventions and gotchas
 

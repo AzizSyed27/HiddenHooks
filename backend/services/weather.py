@@ -2,9 +2,10 @@
 Thin synchronous client for the Open-Meteo Forecast and Archive APIs.
 
 Public surface:
-    get_weather_context(lat, lon) -> dict
-    WeatherAPIError                          (base; HTTP errors, bad shape)
-    WeatherTimeoutError(WeatherAPIError)     (request timeout specifically)
+    get_weather_context(lat, lon)                  -> dict
+    compute_water_temp_estimate(weather_ctx, season) -> float | None
+    WeatherAPIError                                (base; HTTP errors, bad shape)
+    WeatherTimeoutError(WeatherAPIError)           (request timeout specifically)
 
 Caller responsibility:
     - Catch WeatherTimeoutError and WeatherAPIError separately if needed;
@@ -110,9 +111,9 @@ def _fetch_forecast(lat: float, lon: float) -> dict[str, Any]:
         "forecast_days": 2,
         "current": (
             "temperature_2m,precipitation,windspeed_10m,cloudcover,"
-            "weathercode,apparent_temperature,relative_humidity_2m"
+            "weathercode,apparent_temperature,relative_humidity_2m,pressure_msl"
         ),
-        "hourly": "temperature_2m,precipitation,windspeed_10m,cloudcover",
+        "hourly": "temperature_2m,precipitation,windspeed_10m,cloudcover,pressure_msl",
         "daily": (
             "temperature_2m_max,temperature_2m_min,precipitation_sum,"
             "windspeed_10m_max,sunrise,sunset"
@@ -183,6 +184,7 @@ def _zip_hourly(hourly: dict[str, list]) -> list[dict[str, Any]]:
     precips = hourly.get("precipitation", [])
     winds = hourly.get("windspeed_10m", [])
     clouds = hourly.get("cloudcover", [])
+    pressures = hourly.get("pressure_msl", [])
     result = []
     for i, t in enumerate(times):
         result.append({
@@ -191,6 +193,7 @@ def _zip_hourly(hourly: dict[str, list]) -> list[dict[str, Any]]:
             "precipitation_mm": precips[i] if i < len(precips) else None,
             "windspeed_kmh": winds[i] if i < len(winds) else None,
             "cloudcover_pct": clouds[i] if i < len(clouds) else None,
+            "pressure_msl_hpa": pressures[i] if i < len(pressures) else None,
         })
     return result
 
@@ -212,6 +215,51 @@ def _zip_daily(daily: dict[str, list]) -> list[dict[str, Any]]:
             "windspeed_max_kmh": wind_max[i] if i < len(wind_max) else None,
         })
     return result
+
+
+# water_temp_estimate = mean_air_3d + offset; negative = water cooler than air
+_SEASONAL_WATER_OFFSETS: Final[dict[str, float | None]] = {
+    "spring": -4.0,   # water lags air; ice-out thermal memory
+    "summer": -2.0,   # warming lag
+    "fall":    2.0,   # thermal mass retains heat past air cooling
+    "winter":  None,  # constant near-freezing regardless of air
+}
+
+
+def compute_water_temp_estimate(
+    weather_ctx: dict[str, Any], season: str
+) -> float | None:
+    """Estimate surface water temperature from recent air temps and season.
+
+    Args:
+        weather_ctx: dict returned by get_weather_context().
+        season: 'spring' | 'summer' | 'fall' | 'winter'
+
+    Returns:
+        Estimated water temp in Celsius (one decimal place), or None if no
+        historical data is available. Winter always returns 2.0.
+
+    Method: mean daily air temp (avg of max and min) over the last 3 available
+    historical days, adjusted by a seasonal thermal lag offset. ERA5 historical
+    data has a ~5-day lag; 2-3 valid days is normal. None return means lower
+    confidence in species agent, not an error.
+    """
+    if season == "winter":
+        return 2.0
+
+    historical = weather_ctx.get("historical_7d", [])
+    recent = [
+        d for d in historical[-3:]
+        if d.get("temp_max_c") is not None and d.get("temp_min_c") is not None
+    ]
+    if not recent:
+        return None
+
+    mean_air = sum(
+        (d["temp_max_c"] + d["temp_min_c"]) / 2.0 for d in recent
+    ) / len(recent)
+    offset = _SEASONAL_WATER_OFFSETS[season]  # type: ignore[assignment]
+    return round(mean_air + offset, 1)
 
 
 # ---------------------------------------------------------------------------
@@ -313,6 +361,7 @@ def get_weather_context(lat: float, lon: float) -> dict[str, Any]:
         "windspeed_kmh": current_raw.get("windspeed_10m"),
         "cloudcover_pct": current_raw.get("cloudcover"),
         "weathercode": current_raw.get("weathercode"),
+        "pressure_msl_hpa": current_raw.get("pressure_msl"),
     }
 
     # Filter historical daily to past entries only: _fetch_historical uses

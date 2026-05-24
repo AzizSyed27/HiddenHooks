@@ -422,12 +422,12 @@ Then create `backend/services/agents.py` with one runner function per agent role
 
 ### Verify in the plan
 
-- [ ] API key validated at first call, not import time (importable for testing)
-- [ ] JSON parsing has retry logic with explicit "respond with valid JSON" reminder
-- [ ] Timeout configured (30s)
-- [ ] No API key leak in exception messages
-- [ ] Agent runners are pure functions — input → output, no side effects beyond the API call
-- [ ] Peer review function takes role + original output + peer outputs as separate args
+- [x] API key validated at first call, not import time (importable for testing)
+- [x] JSON parsing has retry logic with explicit "respond with valid JSON" reminder
+- [x] Timeout configured (30s)
+- [x] No API key leak in exception messages
+- [x] Agent runners are pure functions — input → output, no side effects beyond the API call
+- [x] Peer review function takes role + original output + peer outputs as separate args
 
 ### Verification
 

@@ -83,6 +83,13 @@ MAPBOX_ISOCHRONE_URL = "https://api.mapbox.com/isochrone/v1/mapbox/driving"
 MAPBOX_DIRECTIONS_URL = "https://api.mapbox.com/directions/v5/mapbox/driving"
 MAPBOX_HTTP_TIMEOUT_SECONDS = 5
 
+# Anthropic API (Phase 5 multi-agent reasoning layer). ANTHROPIC_API_KEY is read
+# here but not validated at import time — services/anthropic_client.py raises
+# AnthropicAPIError on first call if it's missing. Part 4 startup probe will
+# check this in the lifespan handler alongside MAPBOX_API_KEY.
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+ANTHROPIC_HTTP_TIMEOUT_SECONDS = 30
+
 # Open-Meteo weather APIs (Phase 5, Part 1). No auth key required.
 # Forecast endpoint: current conditions + 48-hour hourly + 2-day daily.
 # Archive endpoint: ERA5 reanalysis (~5-day publication lag; historical_7d

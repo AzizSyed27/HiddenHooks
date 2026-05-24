@@ -40,6 +40,10 @@ Revise your own position based on peer reasoning. You must:
 
 ## Output
 
+> **IMPORTANT**: The output schema below REPLACES the output schema from your specialist
+> prompt above. Do not return the specialist's normal output format in this round —
+> return the peer-review schema only.
+
 Return ONLY a JSON code block. No text before or after.
 
 ```json

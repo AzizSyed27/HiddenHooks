@@ -362,11 +362,11 @@ Used by each specialist in Round 2. Instructions:
 
 ### Verify in the plan
 
-- [ ] Each agent prompt explicitly specifies the JSON output schema
-- [ ] Output schemas are parseable (no free-form prose where structured fields are needed)
-- [ ] Peer-review prompt is generic enough to work for all three specialists
-- [ ] Coordinator prompts produce schemas that match the eventual API response structure
-- [ ] Loader caches prompts (don't read file on every agent call)
+- [x] Each agent prompt explicitly specifies the JSON output schema
+- [x] Output schemas are parseable (no free-form prose where structured fields are needed)
+- [x] Peer-review prompt is generic enough to work for all three specialists
+- [x] Coordinator prompts produce schemas that match the eventual API response structure
+- [x] Loader caches prompts (don't read file on every agent call)
 
 ### Verification
 

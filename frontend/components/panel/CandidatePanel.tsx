@@ -1,7 +1,8 @@
 "use client"
 
 import { motion, AnimatePresence } from "framer-motion"
-import { ChevronLeft } from "lucide-react"
+import { ChevronLeft, Loader2 } from "lucide-react"
+import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { SheetHeader } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
@@ -12,8 +13,11 @@ import type {
   DriveTimeData,
   DriveTimeMin,
   NearLocation,
+  RerankResponse,
+  TripPlanResponse,
   Weights,
 } from "@/lib/types"
+import AiRerankResult from "./AiRerankResult"
 import CandidateDetail, { ConfidenceDot } from "./CandidateDetail"
 import LocationFilter from "./LocationFilter"
 
@@ -56,7 +60,24 @@ interface CandidatePanelProps {
   onClear: () => void
   driveTimeData: DriveTimeData | null
   driveTimeLoading: boolean
+  rerankResult: RerankResponse | null
+  rerankLoading: boolean
+  rerankError: string | null
+  onGetAiTake: () => void
+  onClearRerank: () => void
+  tripPlanResult: TripPlanResponse | null
+  tripPlanLoading: boolean
+  tripPlanError: string | null
+  onPlanTrip: () => void
+  onClearTripPlan: () => void
 }
+
+const RERANK_STAGES = [
+  "Reasoning…",
+  "Specialists analyzing…",
+  "Peer review…",
+  "Synthesizing…",
+]
 
 export default function CandidatePanel({
   candidates,
@@ -74,11 +95,31 @@ export default function CandidatePanel({
   onClear,
   driveTimeData,
   driveTimeLoading,
+  rerankResult,
+  rerankLoading,
+  rerankError,
+  onGetAiTake,
+  onClearRerank,
+  tripPlanResult,
+  tripPlanLoading,
+  tripPlanError,
+  onPlanTrip,
+  onClearTripPlan,
 }: CandidatePanelProps) {
   const selectedFeature: CandidateFeature | null =
     selectedId != null
       ? (candidates?.features.find((f) => f.properties.id === selectedId) ?? null)
       : null
+
+  const [rerankStageIdx, setRerankStageIdx] = useState(0)
+  useEffect(() => {
+    if (!rerankLoading) { setRerankStageIdx(0); return }
+    const id = setInterval(() => {
+      setRerankStageIdx((i) => (i + 1) % RERANK_STAGES.length)
+    }, 10_000)
+    return () => clearInterval(id)
+  }, [rerankLoading])
+  const rerankLoadingText = RERANK_STAGES[rerankStageIdx]
 
   return (
     <motion.div
@@ -102,28 +143,51 @@ export default function CandidatePanel({
         </button>
       </SheetHeader>
 
-      {/* Region selector */}
-      <div className="flex gap-1.5 border-b px-4 py-2.5">
-        {(["both", "FMZ16", "FMZ17"] as const).map((v) => {
-          const active = v === "both" ? fmz === null : fmz === v
-          return (
-            <button
-              key={v}
-              onClick={() => {
-                if (v === "both") onFmzChange(null)
-                else onFmzChange(v)
-              }}
-              className={cn(
-                "rounded-full px-3 py-1 font-sans text-xs font-medium transition-colors",
-                active
-                  ? "bg-foreground text-background"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80",
-              )}
-            >
-              {v === "both" ? "Both" : v === "FMZ16" ? "FMZ 16" : "FMZ 17"}
-            </button>
-          )
-        })}
+      {/* Region selector + AI button */}
+      <div className="flex items-center gap-1.5 border-b px-4 py-2.5">
+        <div className="flex gap-1.5">
+          {(["both", "FMZ16", "FMZ17"] as const).map((v) => {
+            const active = v === "both" ? fmz === null : fmz === v
+            return (
+              <button
+                key={v}
+                onClick={() => {
+                  if (v === "both") onFmzChange(null)
+                  else onFmzChange(v)
+                }}
+                className={cn(
+                  "rounded-full px-3 py-1 font-sans text-xs font-medium transition-colors",
+                  active
+                    ? "bg-foreground text-background"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80",
+                )}
+              >
+                {v === "both" ? "Both" : v === "FMZ16" ? "FMZ 16" : "FMZ 17"}
+              </button>
+            )
+          })}
+        </div>
+        <button
+          onClick={onGetAiTake}
+          disabled={!nearLocation || rerankLoading || !candidates?.features.length}
+          title={!nearLocation ? "Set a location to enable AI re-ranking" : undefined}
+          className={cn(
+            "ml-auto flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1",
+            "font-sans text-xs font-medium transition-colors",
+            nearLocation && !rerankLoading
+              ? "bg-foreground text-background hover:bg-foreground/80"
+              : "cursor-default bg-muted text-muted-foreground opacity-50",
+          )}
+        >
+          {rerankLoading ? (
+            <>
+              <Loader2 size={12} className="animate-spin" />
+              {rerankLoadingText}
+            </>
+          ) : (
+            "Get AI take"
+          )}
+        </button>
       </div>
 
       {/* Weight sliders */}
@@ -175,54 +239,80 @@ export default function CandidatePanel({
               driveTimeMin={driveTimeMin}
               driveTimeData={driveTimeData}
               driveTimeLoading={driveTimeLoading}
+              tripPlanResult={tripPlanResult}
+              tripPlanLoading={tripPlanLoading}
+              tripPlanError={tripPlanError}
+              onPlanTrip={onPlanTrip}
+              onClearTripPlan={onClearTripPlan}
+              nearLocation={nearLocation}
             />
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Ranked candidate list */}
+      {/* AI rerank result OR default candidate list */}
       <div className="flex-1 overflow-y-auto">
-        {candidates?.features.map((f) => {
-          const p = f.properties
-          const isSelected = p.id === selectedId
-          return (
+        {rerankResult ? (
+          <AiRerankResult
+            result={rerankResult}
+            candidates={candidates}
+            selectedId={selectedId}
+            onSelect={onSelect}
+            onBack={onClearRerank}
+          />
+        ) : rerankError ? (
+          <div className="px-4 py-6 text-center">
+            <p className="font-sans text-xs text-destructive">{rerankError}</p>
             <button
-              key={p.id}
-              onClick={() => onSelect(p.id)}
-              className={cn(
-                "flex w-full items-center gap-2 border-b border-border/40 px-4 py-2.5 text-left",
-                "hover:bg-muted/50",
-                isSelected && "bg-muted",
-              )}
+              onClick={onGetAiTake}
+              className="mt-2 font-sans text-xs underline hover:no-underline"
             >
-              {/* Rank badge — color mirrors map layer */}
-              <Badge
-                style={{ background: compositeColor(p.composite), color: "#fff" }}
-                className="shrink-0 justify-center border-0 font-sans text-[10px] font-semibold"
-              >
-                {p.rank}
-              </Badge>
-              {/* FMZ badge */}
-              <span className="shrink-0 rounded bg-muted px-1 font-mono text-[9px] text-muted-foreground">
-                {p.fmz_zone.replace("FMZ", "")}
-              </span>
-              {/* Name + distance + confidence dot */}
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <p className="truncate font-serif text-sm leading-tight">
-                    {displayName(p)}
-                  </p>
-                  <ConfidenceDot confidence={p.f_confidence} />
-                </div>
-                <p className="font-sans text-xs text-muted-foreground">
-                  {p.dist_to_road_meters != null
-                    ? `${p.dist_to_road_meters.toFixed(0)} m`
-                    : "—"}
-                </p>
-              </div>
+              Retry
             </button>
-          )
-        })}
+          </div>
+        ) : (
+          candidates?.features.map((f) => {
+            const p = f.properties
+            const isSelected = p.id === selectedId
+            return (
+              <button
+                key={p.id}
+                onClick={() => onSelect(p.id)}
+                className={cn(
+                  "flex w-full items-center gap-2 border-b border-border/40 px-4 py-2.5 text-left",
+                  "hover:bg-muted/50",
+                  isSelected && "bg-muted",
+                )}
+              >
+                {/* Rank badge — color mirrors map layer */}
+                <Badge
+                  style={{ background: compositeColor(p.composite), color: "#fff" }}
+                  className="shrink-0 justify-center border-0 font-sans text-[10px] font-semibold"
+                >
+                  {p.rank}
+                </Badge>
+                {/* FMZ badge */}
+                <span className="shrink-0 rounded bg-muted px-1 font-mono text-[9px] text-muted-foreground">
+                  {p.fmz_zone.replace("FMZ", "")}
+                </span>
+                {/* Name + distance + confidence dot */}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <p className="truncate font-serif text-sm leading-tight">
+                      {displayName(p)}
+                    </p>
+                    <ConfidenceDot confidence={p.f_confidence} />
+                  </div>
+                  <p className="font-sans text-xs text-muted-foreground">
+                    {p.dist_to_road_meters != null
+                      ? `${p.dist_to_road_meters.toFixed(0)} m`
+                      : "—"}
+                  </p>
+                </div>
+              </button>
+            )
+          })
+        )}
       </div>
     </motion.div>
   )

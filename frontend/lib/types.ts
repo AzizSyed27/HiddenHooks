@@ -64,3 +64,43 @@ export interface DriveTimeData {
   parking_lon: number | null
   error: string | null
 }
+
+// Phase 5 agent types — mirrors backend RerankResponse / TripPlanResponse.
+
+export interface RerankedCandidate {
+  candidate_id: number
+  rank: number
+  composite_call: number
+  one_line_why: string
+  specialist_agreement: "high" | "medium" | "low"
+}
+
+export interface RerankResponse {
+  request_id: string
+  ranked_candidates: RerankedCandidate[]
+  weighting: {
+    weather_agent: number
+    timing_agent: number
+    species_agent: number
+    rationale: string
+  }
+  current_conditions: string
+  synthesis_note: string | null
+}
+
+export interface TripPlanSpecies {
+  species: string
+  activity_note: string
+}
+
+export interface TripPlanResponse {
+  request_id: string
+  candidate_id: number
+  overall_call: "go now" | "good window coming" | "wait" | "skip"
+  best_window: string
+  expected_species: TripPlanSpecies[]
+  conditions_summary: string
+  things_to_watch: string[]
+  key_risks: string[]
+  confidence: "high" | "medium" | "low"
+}

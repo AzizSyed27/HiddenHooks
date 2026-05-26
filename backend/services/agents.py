@@ -70,7 +70,7 @@ def run_weather_agent(
         },
         indent=2,
     )
-    return call_claude(system_prompt, user_message)
+    return call_claude(system_prompt, user_message, max_tokens=8192)
 
 
 def run_timing_agent(
@@ -95,7 +95,7 @@ def run_timing_agent(
         },
         indent=2,
     )
-    return call_claude(system_prompt, user_message)
+    return call_claude(system_prompt, user_message, max_tokens=8192)
 
 
 def run_species_agent(
@@ -125,7 +125,7 @@ def run_species_agent(
         },
         indent=2,
     )
-    return call_claude(system_prompt, user_message)
+    return call_claude(system_prompt, user_message, max_tokens=8192)
 
 
 def run_peer_review(
@@ -156,7 +156,7 @@ def run_peer_review(
         },
         indent=2,
     )
-    return call_claude(system_prompt, user_message)
+    return call_claude(system_prompt, user_message, max_tokens=8192)
 
 
 def run_coordinator_rerank(

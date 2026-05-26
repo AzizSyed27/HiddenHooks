@@ -88,7 +88,7 @@ MAPBOX_HTTP_TIMEOUT_SECONDS = 5
 # AnthropicAPIError on first call if it's missing. Part 4 startup probe will
 # check this in the lifespan handler alongside MAPBOX_API_KEY.
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
-ANTHROPIC_HTTP_TIMEOUT_SECONDS = 30
+ANTHROPIC_HTTP_TIMEOUT_SECONDS = 120
 
 # Open-Meteo weather APIs (Phase 5, Part 1). No auth key required.
 # Forecast endpoint: current conditions + 48-hour hourly + 2-day daily.

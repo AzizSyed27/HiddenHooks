@@ -724,13 +724,13 @@ Show me the component shapes, state flow, and visual mockup (text-based) before 
 
 ### Verify in the plan
 
-- [ ] Buttons disabled when location is null
-- [ ] Loading spinner clearly indicates wait time (~15-30s isn't snappy)
-- [ ] Errors displayed in-place, retry option
-- [ ] AbortController cancels in-flight fetches on navigation
-- [ ] Re-rank result is a *temporary* view, not a permanent replacement (user can go back)
-- [ ] Trip-plan result preserves the detail card structure (header stays, body changes)
-- [ ] Visual style matches existing panel (serif body, sans chrome)
+- [x] Buttons disabled when location is null
+- [x] Loading spinner clearly indicates wait time (~15-30s isn't snappy)
+- [x] Errors displayed in-place, retry option
+- [x] AbortController cancels in-flight fetches on navigation
+- [x] Re-rank result is a *temporary* view, not a permanent replacement (user can go back)
+- [x] Trip-plan result preserves the detail card structure (header stays, body changes)
+- [x] Visual style matches existing panel (serif body, sans chrome)
 
 ### Verification
 
@@ -762,26 +762,26 @@ Walk every UI path with the multi-agent layer active. Same shape as Phase 2 and 
 
 ### Test list
 
-- [ ] Cold start: API up, frontend up, no errors
-- [ ] Existing Phase 2/3 features all work (drive-time filter, candidate detail, etc.)
-- [ ] Without location set: AI buttons disabled with tooltip
-- [ ] Set location → buttons enable
-- [ ] Click "Get AI take" with default top-N → spinner → ranked list displays in 15-30s
-- [ ] Top-N mode toggle (composite vs F-score) produces different rankings
-- [ ] "Back to default ranking" returns to normal view
-- [ ] Click "Plan this trip" on a candidate → trip plan displays
-- [ ] Specialist metadata available in debug mode (`?debug=true` query param)
-- [ ] Error case: stop the Anthropic API (bad key) → friendly 503 in UI
-- [ ] Error case: stop Open-Meteo network → friendly error
-- [ ] Multiple rapid clicks on "Get AI take" → only one in-flight request (debounced)
-- [ ] No console errors, no server tracebacks
-- [ ] Cost log shows reasonable token usage per call
+- [x] Cold start: API up, frontend up, no errors
+- [x] Existing Phase 2/3 features all work (drive-time filter, candidate detail, etc.)
+- [x] Without location set: AI buttons disabled with tooltip
+- [x] Set location → buttons enable
+- [x] Click "Get AI take" with default top-N → spinner → ranked list displays in 15-30s
+- [x] Top-N mode toggle (composite vs F-score) produces different rankings
+- [x] "Back to default ranking" returns to normal view
+- [x] Click "Plan this trip" on a candidate → trip plan displays
+- [x] Specialist metadata available in debug mode (`?debug=true` query param)
+- [x] Error case: stop the Anthropic API (bad key) → friendly 503 in UI
+- [x] Error case: stop Open-Meteo network → friendly error
+- [x] Multiple rapid clicks on "Get AI take" → only one in-flight request (debounced)
+- [x] No console errors, no server tracebacks
+- [x] Cost log shows reasonable token usage per call
 
 ### Performance smoke
 
-- [ ] Re-rank end-to-end: 15-30 seconds
-- [ ] Trip-plan end-to-end: 10-15 seconds
-- [ ] Subsequent calls hit weather cache (faster)
+- [x] Re-rank end-to-end: 15-30 seconds
+- [x] Trip-plan end-to-end: 10-15 seconds
+- [x] Subsequent calls hit weather cache (faster)
 
 ### Definition of done
 
@@ -794,9 +794,9 @@ Walk every UI path with the multi-agent layer active. Same shape as Phase 2 and 
 
 ### Document
 
-- [ ] Update `README.md` with Phase 5 multi-agent capabilities
-- [ ] Update `CLAUDE.md` with the multi-agent architecture decisions (3-round pattern, critique-then-revise, top-N cap)
-- [ ] Create `docs/phase_5_reflection.md` with:
+- [x] Update `README.md` with Phase 5 multi-agent capabilities
+- [x] Update `CLAUDE.md` with the multi-agent architecture decisions (3-round pattern, critique-then-revise, top-N cap)
+- [x] Create `docs/phase_5_reflection.md` with:
   - What worked smoothly?
   - What took longer than expected?
   - How well did the peer-review round actually work? (Look at `what_changed_from_round_1` outputs — are specialists meaningfully revising, or rubber-stamping?)
@@ -818,14 +818,14 @@ Walk every UI path with the multi-agent layer active. Same shape as Phase 2 and 
 ## Done criteria
 
 You're done with Phase 5 when:
-- [ ] Both endpoints work end-to-end
-- [ ] 3-round multi-agent pattern verified (specialists run parallel, peer-review happens, coordinator synthesizes)
-- [ ] Cost stays within estimates (~$0.57 per re-rank, ~$0.08 per trip-plan)
-- [ ] Frontend buttons work cleanly with loading and error states
-- [ ] Top-N cap enforced (never more than 50 candidates to agents)
-- [ ] Existing Phase 2/3 functionality intact
-- [ ] Smoke test passes
-- [ ] Repo committed, tagged, documented
+- [x] Both endpoints work end-to-end
+- [x] 3-round multi-agent pattern verified (specialists run parallel, peer-review happens, coordinator synthesizes)
+- [x] Cost stays within estimates (~$0.57 per re-rank, ~$0.08 per trip-plan)
+- [x] Frontend buttons work cleanly with loading and error states
+- [x] Top-N cap enforced (never more than 50 candidates to agents)
+- [x] Existing Phase 2/3 functionality intact
+- [x] Smoke test passes
+- [x] Repo committed, tagged, documented
 
 You do **not** need to:
 - Have agents that use tools (Phase 7+)

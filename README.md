@@ -10,7 +10,7 @@ bodies and stream reaches by a multi-component score. Built as a personal projec
 
 ---
 
-## Current phase: Phase 5 — Multi-agent reasoning layer (in progress)
+## Current phase: Phase 5 — Multi-agent reasoning layer (complete)
 Coverage: **FMZ 16 and FMZ 17** (southern and central Ontario).
 
 Four scoring components, each weighted independently per query:
@@ -23,7 +23,12 @@ Four scoring components, each weighted independently per query:
 | Ecology bonus | E | Habitat quality and connectivity through the reach network |
 
 Weights are tunable from the panel. The composite score drives map color and per-FMZ rank.
-A drive-time filter (Mapbox isochrone) limits candidates to within 30, 60, or 90 minutes from a chosen location. Selecting a candidate shows drive time, distance, and route to nearest parking.
+A drive-time filter (Mapbox isochrone) limits candidates to within 20, 30, 45, or 60 minutes from a chosen location. Selecting a candidate shows drive time, distance, and route to nearest parking.
+
+Phase 5 adds on-demand AI reasoning on top of the base scores. Two opt-in buttons — never auto-triggered:
+
+- **Get AI take** — re-ranks the current candidate list using three parallel specialist agents (Weather, Timing/Pressure, Species) followed by peer review and a Coordinator synthesis. Replaces the candidate list with an AI-ordered view showing per-candidate reasoning, specialist agreement signal, and the weighting rationale.
+- **Plan this trip** — runs the same three-round agent pipeline for a single selected candidate and produces a structured trip advisory: overall go/wait/skip call, best fishing window, active species, conditions summary, things to watch, and key risks.
 
 ---
 
@@ -125,6 +130,8 @@ Endpoints:
   and `near_lat`/`near_lon`/`drive_time_min` drive-time filter
 - `GET /candidates/{id}/drive-time?from_lat=X&from_lon=Y` — Mapbox-routed drive time,
   distance, and route geometry to nearest parking for a selected candidate
+- `POST /agents/rerank` — 3-round multi-agent re-rank for a list of candidate IDs
+- `POST /agents/trip-plan` — 3-round multi-agent trip advisory for a single candidate
 
 ### 6. Configure frontend environment
 
@@ -161,14 +168,21 @@ backend/
   processing/                snap_ara_to_candidates, build_connectivity, segment_reaches
   scoring/                   dist_to_road, hiddenness, accessibility,
                              fish_potential, ecology
-  services/                  mapbox.py (isochrone + directions), weather.py (Open-Meteo)
-  api/                       FastAPI app — /health, /regions, /candidates, /drive-time
+  services/                  mapbox.py (isochrone + directions), weather.py (Open-Meteo),
+                             conditions.py (datetime classifiers), topn.py (candidate
+                             selection), orchestrator.py (3-round agent runner),
+                             agents.py (specialist/coordinator calls),
+                             anthropic_client.py (Claude SDK wrapper),
+                             prompts/ (system prompt files per agent role)
+  api/                       FastAPI app — /health, /regions, /candidates,
+                             /drive-time, /agents/rerank, /agents/trip-plan
 
 frontend/
   app/                       Next.js App Router pages
   components/
     map/                     MapView (react-map-gl layers, composite coloring)
-    panel/                   CandidatePanel, CandidateDetail, LocationFilter
+    panel/                   CandidatePanel, CandidateDetail, LocationFilter,
+                             AiRerankResult, TripPlanResult
   lib/                       shared types, utilities
 
 phase-0-data/                raw data files — not committed

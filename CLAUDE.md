@@ -205,6 +205,19 @@ UPDATE candidates SET name = NULL WHERE name = 'NaN';
 Verify with `SELECT COUNT(*) FROM candidates WHERE name = 'NaN';` returning 0 before
 proceeding to downstream scoring or graph operations.
 
+## Phase 5 v1 limitations
+
+- **Rerank result resets on any filter change**: `rerankResult` clears whenever `fetchCandidates`
+  is called (weight/FMZ/location change). A 30-60s expensive ranking is lost on the next filter
+  interaction. Smarter v2 behavior: filter the AI-ranked list to the current visible candidates
+  rather than resetting. Deferred: full reset is simpler and safe; re-running is explicit.
+
+- **"Plan this trip" button hidden once result shows**: Re-firing requires "← Back to scores"
+  then clicking again. Deferred: "Re-plan" link is a Phase 5 UI iteration.
+
+- **`top_n_mode` not exposed in UI**: Defaults to `composite`. Revisit if `f_score` mode
+  proves useful for heavy fish-potential use cases.
+
 ## Phase 3 — walk-time deferred (concluded 2026-05-12)
 
 Phase 3 ships Parts 1-3 (drive-time isochrone filter via Mapbox). Parts 4-6

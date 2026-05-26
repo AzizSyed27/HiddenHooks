@@ -6,7 +6,7 @@ import { ChevronRight } from "lucide-react"
 import type { MapRef } from "react-map-gl/mapbox"
 import MapView from "@/components/map/MapView"
 import CandidatePanel from "@/components/panel/CandidatePanel"
-import type { CandidateCollection, Weights, NearLocation, DriveTimeMin, DriveTimeData } from "@/lib/types"
+import type { CandidateCollection, Weights, NearLocation, DriveTimeMin, DriveTimeData, RerankResponse, TripPlanResponse } from "@/lib/types"
 
 type Bbox = [number, number, number, number]
 
@@ -55,6 +55,14 @@ export default function Home() {
   const [driveTimeData, setDriveTimeData] = useState<DriveTimeData | null>(null)
   const [driveTimeLoading, setDriveTimeLoading] = useState(false)
   const driveTimeAbortRef = useRef<AbortController | null>(null)
+  const rerankAbortRef = useRef<AbortController | null>(null)
+  const tripPlanAbortRef = useRef<AbortController | null>(null)
+  const [rerankResult, setRerankResult] = useState<RerankResponse | null>(null)
+  const [rerankLoading, setRerankLoading] = useState(false)
+  const [rerankError, setRerankError] = useState<string | null>(null)
+  const [tripPlanResult, setTripPlanResult] = useState<TripPlanResponse | null>(null)
+  const [tripPlanLoading, setTripPlanLoading] = useState(false)
+  const [tripPlanError, setTripPlanError] = useState<string | null>(null)
 
   const fetchCandidates = useCallback(async (
     currentFmz: "FMZ16" | "FMZ17" | null,
@@ -64,6 +72,8 @@ export default function Home() {
   ) => {
     setLoading(true)
     setError(null)
+    setRerankResult(null)
+    setRerankError(null)
     try {
       const qs = new URLSearchParams({
         w_h: currentWeights.w_h.toString(),
@@ -158,6 +168,15 @@ export default function Home() {
     }
   }, [selectedId, nearLocation, driveTimeMin])
 
+  // Reset trip plan when the selected candidate changes.
+  useEffect(() => {
+    setTripPlanResult(null)
+    setTripPlanError(null)
+    setTripPlanLoading(false)
+    tripPlanAbortRef.current?.abort()
+    tripPlanAbortRef.current = null
+  }, [selectedId])
+
   // Fit the viewport to the full candidate set once both map and data are ready.
   useEffect(() => {
     if (!candidates || !mapReady || !mapRef.current) return
@@ -233,6 +252,90 @@ export default function Home() {
     [fetchCandidates, fmz, weights, nearLocation],
   )
 
+  const handleGetAiTake = useCallback(() => {
+    if (!nearLocation || !candidates) return
+    rerankAbortRef.current?.abort()
+    const controller = new AbortController()
+    rerankAbortRef.current = controller
+    setRerankLoading(true)
+    setRerankResult(null)
+    setRerankError(null)
+
+    const candidateIds = candidates.features.slice(0, 50).map((f) => f.properties.id)
+
+    fetch(`${API_URL}/agents/rerank`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
+      body: JSON.stringify({
+        candidate_ids: candidateIds,
+        near_lat: nearLocation.lat,
+        near_lon: nearLocation.lon,
+      }),
+    })
+      .then(async (res) => {
+        if (controller.signal.aborted) return
+        if (!res.ok) {
+          const body = await res.json().catch(() => null)
+          console.error("Rerank error:", body?.detail ?? `Failed (${res.status})`)
+          setRerankError("AI ranking failed. Please retry.")
+          return
+        }
+        const data = (await res.json()) as RerankResponse
+        if (controller.signal.aborted) return
+        setRerankResult(data)
+      })
+      .catch((err) => {
+        if (controller.signal.aborted || (err as Error).name === "AbortError") return
+        setRerankError("AI ranking failed. Please retry.")
+      })
+      .finally(() => {
+        if (controller.signal.aborted) return
+        setRerankLoading(false)
+      })
+  }, [nearLocation, candidates])
+
+  const handlePlanTrip = useCallback(() => {
+    if (!selectedId || !nearLocation) return
+    tripPlanAbortRef.current?.abort()
+    const controller = new AbortController()
+    tripPlanAbortRef.current = controller
+    setTripPlanLoading(true)
+    setTripPlanResult(null)
+    setTripPlanError(null)
+
+    fetch(`${API_URL}/agents/trip-plan`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
+      body: JSON.stringify({
+        candidate_id: selectedId,
+        near_lat: nearLocation.lat,
+        near_lon: nearLocation.lon,
+      }),
+    })
+      .then(async (res) => {
+        if (controller.signal.aborted) return
+        if (!res.ok) {
+          const body = await res.json().catch(() => null)
+          console.error("Trip plan error:", body?.detail ?? `Failed (${res.status})`)
+          setTripPlanError("Trip plan failed. Please retry.")
+          return
+        }
+        const data = (await res.json()) as TripPlanResponse
+        if (controller.signal.aborted) return
+        setTripPlanResult(data)
+      })
+      .catch((err) => {
+        if (controller.signal.aborted || (err as Error).name === "AbortError") return
+        setTripPlanError("Trip plan failed. Please retry.")
+      })
+      .finally(() => {
+        if (controller.signal.aborted) return
+        setTripPlanLoading(false)
+      })
+  }, [selectedId, nearLocation])
+
   const handleClear = useCallback(() => {
     setNearLocation(null)
     setDriveTimeMin(null)
@@ -289,6 +392,16 @@ export default function Home() {
             onClear={handleClear}
             driveTimeData={driveTimeData}
             driveTimeLoading={driveTimeLoading}
+            rerankResult={rerankResult}
+            rerankLoading={rerankLoading}
+            rerankError={rerankError}
+            onGetAiTake={handleGetAiTake}
+            onClearRerank={() => setRerankResult(null)}
+            tripPlanResult={tripPlanResult}
+            tripPlanLoading={tripPlanLoading}
+            tripPlanError={tripPlanError}
+            onPlanTrip={handlePlanTrip}
+            onClearTripPlan={() => setTripPlanResult(null)}
           />
         )}
       </AnimatePresence>

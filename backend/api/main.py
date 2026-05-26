@@ -1,31 +1,49 @@
 from __future__ import annotations
 
 import json
+import logging
 import sys
+import time
+import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, Literal
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from shapely.geometry import MultiPolygon, Polygon, mapping
-from sqlalchemy import create_engine, text
+from sqlalchemy import bindparam, create_engine, text
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from config import DATABASE_URL, MAPBOX_API_KEY
+from config import ANTHROPIC_API_KEY, DATABASE_URL, MAPBOX_API_KEY
+from services.conditions import get_all_conditions
 from services.mapbox import (
     MapboxAPIError,
     MapboxTimeoutError,
     get_drive_directions,
     get_drive_isochrone,
 )
+from services.orchestrator import (
+    OrchestrationError,
+    run_rerank_orchestration,
+    run_trip_plan_orchestration,
+)
+from services.topn import select_top_n
+from services.weather import WeatherAPIError, WeatherTimeoutError, get_weather_context
+
+_log = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     if not MAPBOX_API_KEY:
         raise RuntimeError(
             "MAPBOX_API_KEY is missing from environment. "
+            "Set it in backend/.env before starting the API."
+        )
+    if not ANTHROPIC_API_KEY:
+        raise RuntimeError(
+            "ANTHROPIC_API_KEY is missing from environment. "
             "Set it in backend/.env before starting the API."
         )
     yield
@@ -35,7 +53,7 @@ app = FastAPI(title="HiddenHooks API", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
-    allow_methods=["GET"],
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 engine = create_engine(DATABASE_URL)
@@ -100,6 +118,57 @@ class DriveTimeResponse(BaseModel):
     parking_lat: float | None
     parking_lon: float | None
     error: str | None
+
+
+class RerankRequest(BaseModel):
+    candidate_ids: list[int] = Field(min_length=1, max_length=200)
+    near_lat: float = Field(ge=41.0, le=50.0)
+    near_lon: float = Field(ge=-85.0, le=-74.0)
+    top_n_mode: Literal["composite", "f_score"] = "composite"
+    top_n: int = Field(default=30, ge=5, le=50)
+
+    @field_validator("candidate_ids")
+    @classmethod
+    def must_be_unique(cls, v: list[int]) -> list[int]:
+        if len(v) != len(set(v)):
+            raise ValueError("candidate_ids must contain unique values")
+        return v
+
+
+class RerankedCandidate(BaseModel):
+    candidate_id: int
+    rank: int
+    composite_call: float
+    one_line_why: str
+    specialist_agreement: Literal["high", "medium", "low"]
+
+
+class RerankResponse(BaseModel):
+    request_id: str
+    ranked_candidates: list[RerankedCandidate]
+    weighting: dict[str, Any]
+    current_conditions: str         # handler-derived label: "Spring, Saturday, Dawn"
+    synthesis_note: str | None
+    specialist_metadata: dict[str, Any] | None = None
+
+
+class TripPlanRequest(BaseModel):
+    candidate_id: int
+    near_lat: float = Field(ge=41.0, le=50.0)
+    near_lon: float = Field(ge=-85.0, le=-74.0)
+
+
+class TripPlanResponse(BaseModel):
+    request_id: str
+    candidate_id: int
+    overall_call: Literal["go now", "good window coming", "wait", "skip"]
+    best_window: str
+    expected_species: list[dict[str, Any]]
+    conditions_summary: str         # coordinator-generated 2-3 sentence synthesis
+    things_to_watch: list[str]
+    key_risks: list[str]
+    confidence: Literal["high", "medium", "low"]
+    specialist_metadata: dict[str, Any] | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -181,6 +250,39 @@ _NEAREST_PARKING_SQL = text("""
     WHERE c.id = :candidate_id AND c.is_active = TRUE
 """)
 
+
+# Columns the agent layer needs. id aliased to candidate_id so agent output
+# keys match input keys. f_tier is derived from f_confidence — not a DB column.
+# Omits source_dataset, dist_to_road_meters, area_m2, length_m,
+# a_dist_to_trail_m, a_dist_to_parking_m — not referenced by any agent prompt.
+_AGENT_CANDIDATES_SELECT = """
+    SELECT
+        id                              AS candidate_id,
+        name,
+        candidate_type::text            AS candidate_type,
+        fmz_zone,
+        h_score,
+        a_score,
+        f_score,
+        e_score,
+        f_species,
+        f_confidence,
+        CASE f_confidence
+            WHEN 'strong'      THEN 1
+            WHEN 'plausible'   THEN 2
+            WHEN 'speculative' THEN 3
+            ELSE NULL
+        END                             AS f_tier
+    FROM candidates
+"""
+
+_FETCH_CANDIDATES_BY_IDS_SQL = text(
+    f"{_AGENT_CANDIDATES_SELECT} WHERE id IN :ids AND is_active = TRUE"
+).bindparams(bindparam("ids", expanding=True))
+
+_FETCH_CANDIDATE_SQL = text(
+    f"{_AGENT_CANDIDATES_SELECT} WHERE id = :candidate_id AND is_active = TRUE"
+)
 
 # ---------------------------------------------------------------------------
 # Endpoints
@@ -345,4 +447,146 @@ def get_candidate_drive_time(
         parking_lat=row["parking_lat"],
         parking_lon=row["parking_lon"],
         error=None,
+    )
+
+
+# Rate-limiting: not implemented in v1. These endpoints invoke Claude for each
+# request (~20-40s wall time, ~$0.05-0.15/call). The UI buttons are opt-in and
+# not auto-triggered, so user discipline is the primary guard. Revisit if cost
+# monitoring shows unexpected spend.
+
+@app.post("/agents/rerank", response_model=RerankResponse)
+def post_agents_rerank(
+    req: RerankRequest,
+    debug: bool = Query(default=False),
+) -> RerankResponse:
+    request_id = str(uuid.uuid4())
+    t_start = time.perf_counter()
+
+    with engine.connect() as conn:
+        rows = conn.execute(
+            _FETCH_CANDIDATES_BY_IDS_SQL, {"ids": req.candidate_ids}
+        ).mappings().all()
+
+    if len(rows) != len(req.candidate_ids):
+        found = {r["candidate_id"] for r in rows}
+        missing = [cid for cid in req.candidate_ids if cid not in found]
+        raise HTTPException(
+            status_code=404,
+            detail=f"Candidates not found or inactive: {missing}",
+        )
+
+    id_order = {cid: i for i, cid in enumerate(req.candidate_ids)}
+    candidates = sorted(
+        [dict(r) for r in rows],
+        key=lambda c: id_order.get(c["candidate_id"], 9999),
+    )
+
+    top_n = select_top_n(candidates, mode=req.top_n_mode, n=req.top_n)
+
+    try:
+        weather_ctx = get_weather_context(req.near_lat, req.near_lon)
+    except WeatherTimeoutError:
+        raise HTTPException(status_code=503, detail="Weather service timed out")
+    except WeatherAPIError as exc:
+        raise HTTPException(status_code=503, detail=f"Weather service unavailable: {exc}")
+
+    conditions = get_all_conditions()
+
+    try:
+        result = run_rerank_orchestration(top_n, weather_ctx, conditions)
+    except OrchestrationError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Agent orchestration failed (request_id={request_id}): {exc}",
+        )
+
+    elapsed = time.perf_counter() - t_start
+    _log.info(
+        "rerank request_id=%s candidates=%d top_n=%d time=%.2fs errors=%s",
+        request_id, len(candidates), len(top_n), elapsed, result["errors"],
+    )
+
+    coord = result["coordinator_output"]
+    current_conditions = (
+        f"{conditions['season'].title()}, "
+        f"{conditions['day_category'].title()}, "
+        f"{conditions['time_of_day'].title()}"
+    )
+
+    return RerankResponse(
+        request_id=request_id,
+        ranked_candidates=[RerankedCandidate(**c) for c in coord["ranked_candidates"]],
+        weighting=coord["weighting"],
+        current_conditions=current_conditions,
+        synthesis_note=coord.get("synthesis_note"),
+        specialist_metadata=(
+            {"round1": result["round1"], "round2": result["round2"],
+             "timings": result["timings"], "errors": result["errors"]}
+            if debug else None
+        ),
+    )
+
+
+@app.post("/agents/trip-plan", response_model=TripPlanResponse)
+def post_agents_trip_plan(
+    req: TripPlanRequest,
+    debug: bool = Query(default=False),
+) -> TripPlanResponse:
+    request_id = str(uuid.uuid4())
+    t_start = time.perf_counter()
+
+    with engine.connect() as conn:
+        row = conn.execute(
+            _FETCH_CANDIDATE_SQL, {"candidate_id": req.candidate_id}
+        ).mappings().first()
+
+    if row is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Candidate {req.candidate_id} not found or inactive",
+        )
+
+    candidate = dict(row)
+
+    try:
+        weather_ctx = get_weather_context(req.near_lat, req.near_lon)
+    except WeatherTimeoutError:
+        raise HTTPException(status_code=503, detail="Weather service timed out")
+    except WeatherAPIError as exc:
+        raise HTTPException(status_code=503, detail=f"Weather service unavailable: {exc}")
+
+    conditions = get_all_conditions()
+
+    try:
+        result = run_trip_plan_orchestration(candidate, weather_ctx, conditions)
+    except OrchestrationError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Agent orchestration failed (request_id={request_id}): {exc}",
+        )
+
+    elapsed = time.perf_counter() - t_start
+    _log.info(
+        "trip-plan request_id=%s candidate_id=%d time=%.2fs errors=%s",
+        request_id, req.candidate_id, elapsed, result["errors"],
+    )
+
+    coord = result["coordinator_output"]
+
+    return TripPlanResponse(
+        request_id=request_id,
+        candidate_id=req.candidate_id,
+        overall_call=coord["overall_call"],
+        best_window=coord["best_window"],
+        expected_species=coord["expected_species"],
+        conditions_summary=coord["conditions_summary"],
+        things_to_watch=coord["things_to_watch"],
+        key_risks=coord["key_risks"],
+        confidence=coord["confidence"],
+        specialist_metadata=(
+            {"round1": result["round1"], "round2": result["round2"],
+             "timings": result["timings"], "errors": result["errors"]}
+            if debug else None
+        ),
     )

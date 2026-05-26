@@ -25,10 +25,17 @@ Four scoring components, each weighted independently per query:
 Weights are tunable from the panel. The composite score drives map color and per-FMZ rank.
 A drive-time filter (Mapbox isochrone) limits candidates to within 20, 30, 45, or 60 minutes from a chosen location. Selecting a candidate shows drive time, distance, and route to nearest parking.
 
+<img alt="Drive routing to nearest parking" src="routing_demo.png" />
+
 Phase 5 adds on-demand AI reasoning on top of the base scores. Two opt-in buttons — never auto-triggered:
 
 - **Get AI take** — re-ranks the current candidate list using three parallel specialist agents (Weather, Timing/Pressure, Species) followed by peer review and a Coordinator synthesis. Replaces the candidate list with an AI-ordered view showing per-candidate reasoning, specialist agreement signal, and the weighting rationale.
+
+<img alt="AI re-ranking result" src="hiddenhooks_ai_ranks.png" />
+
 - **Plan this trip** — runs the same three-round agent pipeline for a single selected candidate and produces a structured trip advisory: overall go/wait/skip call, best fishing window, active species, conditions summary, things to watch, and key risks.
+
+<img alt="AI trip planning output" src="ai_trip_planning.png" />
 
 ---
 

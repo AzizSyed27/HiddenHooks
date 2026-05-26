@@ -514,12 +514,12 @@ Show me both files' structure before generating, including the OrchestrationErro
 
 ### Verify in the plan
 
-- [ ] ThreadPoolExecutor used cleanly (no thread leak risk)
-- [ ] Per-call timeouts enforced (don't let a slow agent block forever)
-- [ ] Graceful degradation: 1 specialist failure → continue; 2+ → abort
-- [ ] Result includes both final output AND per-round intermediates (debugging gold)
-- [ ] Top-N selection respects mode and cap
-- [ ] Orchestrator is pure: takes candidates + context, returns result. No DB access (orchestrator gets candidates from caller, doesn't fetch them)
+- [x] ThreadPoolExecutor used cleanly (no thread leak risk)
+- [x] Per-call timeouts enforced (don't let a slow agent block forever)
+- [x] Graceful degradation: 1 specialist failure → continue; 2+ → abort
+- [x] Result includes both final output AND per-round intermediates (debugging gold)
+- [x] Top-N selection respects mode and cap
+- [x] Orchestrator is pure: takes candidates + context, returns result. No DB access (orchestrator gets candidates from caller, doesn't fetch them)
 
 ### Verification
 

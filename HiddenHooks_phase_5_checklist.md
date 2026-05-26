@@ -629,12 +629,12 @@ Trip-plan is similar but operates on single candidate. Failure handling: 404 if 
 
 ### Verify in the plan
 
-- [ ] Cross-param validation: candidate_ids non-empty, lat/lon both in Ontario range
-- [ ] DB query verifies all requested IDs exist and are active (single query, not per-ID)
-- [ ] Orchestrator is called AFTER all 422-checks (no wasted API calls)
-- [ ] Response includes request_id for debugging
-- [ ] `specialist_metadata` is opt-in via query param `?debug=true` (default off — production response is clean)
-- [ ] Logging captures request_id, candidate count, total time, success/failure
+- [x] Cross-param validation: candidate_ids non-empty, lat/lon both in Ontario range
+- [x] DB query verifies all requested IDs exist and are active (single query, not per-ID)
+- [x] Orchestrator is called AFTER all 422-checks (no wasted API calls)
+- [x] Response includes request_id for debugging
+- [x] `specialist_metadata` is opt-in via query param `?debug=true` (default off — production response is clean)
+- [x] Logging captures request_id, candidate count, total time, success/failure
 
 ### Verification
 

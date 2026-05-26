@@ -98,4 +98,4 @@ ANTHROPIC_HTTP_TIMEOUT_SECONDS = 30
 #   a looser SLA; 5s leaves insufficient headroom for cold response times.
 OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 OPEN_METEO_ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
-OPEN_METEO_HTTP_TIMEOUT_SECONDS = 10
+OPEN_METEO_HTTP_TIMEOUT_SECONDS = 30
